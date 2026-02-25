@@ -1,0 +1,22 @@
+# Python & Django
+*.pyc
+__pycache__/
+db.sqlite3
+/media
+/staticfiles
+
+# Environment
+.env/
+
+# Node / Tailwind
+node_modules/
+dist/
+build/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

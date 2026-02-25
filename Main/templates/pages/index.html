@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internship Calendar</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://kit.fontawesome.com/2462155d8a.js" crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-orange-50 min-h-screen p-8">
+
+    <div class="max-w-6xl mx-auto space-y-10">
+
+        <!-- HEADER -->
+        <div class="text-center space-y-3">
+            <h1 class="text-5xl font-extrabold text-teal-700">
+                Internship Hour Tracker
+            </h1>
+            <p class="text-gray-500 text-lg">
+                Track your internship progress
+            </p>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats shadow-lg w-full bg-white rounded-2xl">
+
+            <!-- Total Logged -->
+            <div class="stat">
+                <div class="stat-title text-gray-500">Total Logged</div>
+                <div class="stat-value text-teal-600">124</div>
+                <div class="stat-desc text-teal-500">hours completed</div>
+            </div>
+
+            <!-- Goal (Neutral Reference) -->
+            <div class="stat">
+                <div class="stat-title text-gray-500">Goal</div>
+                <div class="stat-value text-gray-700">180</div>
+                <div class="stat-desc text-gray-400">required hours</div>
+            </div>
+
+            <!-- Remaining -->
+            <div class="stat">
+                <div class="stat-title text-gray-500">Remaining</div>
+                <div class="stat-value text-teal-600">56</div>
+                <div class="stat-desc text-teal-500">31% left</div>
+            </div>
+
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="card bg-white shadow-lg rounded-2xl">
+            <div class="card-body">
+                <div class="flex justify-between items-center">
+                    <h2 class="card-title text-teal-600 text-xl">
+                        Overall Progress
+                    </h2>
+                    <span class="badge bg-orange-500 text-white border-none">
+                        69%
+                    </span>
+                </div>
+
+                <progress class="progress text-teal-600 h-3 mt-4" value="124" max="180"></progress>
+
+                <p class="text-sm text-gray-500 mt-3 text-right">
+                    124 / 180 hours
+                </p>
+            </div>
+        </div>
+
+        <!-- CALENDAR + LOG -->
+        <div class="card bg-white shadow-lg rounded-2xl">
+            <div class="card-body">
+
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="card-title text-teal-600 text-2xl">
+                        September 2026
+                    </h2>
+
+                    <!-- Navigation (Action = Orange) -->
+                    <div class="space-x-2">
+                        <button class="btn btn-sm btn-circle bg-orange-500 hover:bg-orange-600 text-white border-none">
+                            ❮
+                        </button>
+                        <button class="btn btn-sm btn-circle bg-orange-500 hover:bg-orange-600 text-white border-none">
+                            ❯
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Day Labels -->
+                <div class="grid grid-cols-7 text-center mb-3 text-sm font-semibold text-gray-400">
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div class="grid grid-cols-7 gap-3 text-center">
+
+                    <!-- Empty -->
+                    <div class="p-3 rounded-xl bg-base-200 text-gray-400">1</div>
+
+                    <!-- Logged Days (ALL teal) -->
+                    <div class="p-3 rounded-xl bg-teal-500 text-white shadow-sm hover:scale-105 transition">
+                        <div class="font-bold">2</div>
+                        <div class="text-xs">8h</div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-teal-500 text-white shadow-sm hover:scale-105 transition">
+                        <div class="font-bold">3</div>
+                        <div class="text-xs">8h</div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-base-200">4</div>
+
+                    <div class="p-3 rounded-xl bg-teal-500 text-white shadow-sm hover:scale-105 transition">
+                        <div class="font-bold">5</div>
+                        <div class="text-xs">8h</div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-base-200">6</div>
+                    <div class="p-3 rounded-xl bg-base-200">7</div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

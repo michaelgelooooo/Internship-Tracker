@@ -1,0 +1,23 @@
+<form method="POST" class="space-y-4">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <p class="text-red-500 text-sm">{{ form.non_field_errors }}</p>
+    {% endif %}
+
+    <div>
+        <label class="label font-semibold text-teal-800">Username</label>
+        <input type="text" name="username"
+            class="input input-bordered input-lg w-full rounded-lg focus:border-teal-500 focus:ring focus:ring-teal-100"
+            placeholder="Enter username" required>
+    </div>
+
+    <div>
+        <label class="label font-semibold text-teal-800">Password</label>
+        <input type="password" name="password"
+            class="input input-bordered input-lg w-full rounded-lg focus:border-teal-500 focus:ring focus:ring-teal-100"
+            placeholder="Enter password" required>
+    </div>
+
+    <button type="submit"
+        class="btn btn-lg w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-lg border-none mt-8">LOG-IN</button>
+</form>
