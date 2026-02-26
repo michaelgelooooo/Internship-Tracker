@@ -1,7 +1,18 @@
-<form method="POST" class="space-y-4">
+<form method="POST" action="{% url 'login' %}" class="space-y-4">
     {% csrf_token %}
-    {% if form.non_field_errors %}
-    <p class="text-red-500 text-sm">{{ form.non_field_errors }}</p>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.level_tag }} shadow-lg mb-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>{{ message }}</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost btn-circle" onclick="this.closest('.alert').remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        {% endfor %}
     {% endif %}
 
     <div>
