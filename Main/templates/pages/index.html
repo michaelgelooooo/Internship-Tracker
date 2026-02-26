@@ -1,141 +1,244 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Internship Calendar</title>
+{% load static %}
 
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-    <script src="https://kit.fontawesome.com/2462155d8a.js" crossorigin="anonymous"></script>
-</head>
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
 
-<body class="bg-orange-50 min-h-screen p-8">
-
-    <div class="max-w-6xl mx-auto space-y-10">
-
-        <!-- HEADER -->
-        <div class="text-center space-y-3">
-            <h1 class="text-5xl font-extrabold text-teal-700">
-                Internship Hour Tracker
-            </h1>
-            <p class="text-gray-500 text-lg">
-                Track your internship progress
-            </p>
-        </div>
-
-        <!-- STATS -->
-        <div class="stats shadow-lg w-full bg-white rounded-2xl">
-
-            <!-- Total Logged -->
-            <div class="stat">
-                <div class="stat-title text-gray-500">Total Logged</div>
-                <div class="stat-value text-teal-600">124</div>
-                <div class="stat-desc text-teal-500">hours completed</div>
-            </div>
-
-            <!-- Goal (Neutral Reference) -->
-            <div class="stat">
-                <div class="stat-title text-gray-500">Goal</div>
-                <div class="stat-value text-gray-700">180</div>
-                <div class="stat-desc text-gray-400">required hours</div>
-            </div>
-
-            <!-- Remaining -->
-            <div class="stat">
-                <div class="stat-title text-gray-500">Remaining</div>
-                <div class="stat-value text-teal-600">56</div>
-                <div class="stat-desc text-teal-500">31% left</div>
-            </div>
-
-        </div>
-
-        <!-- PROGRESS -->
-        <div class="card bg-white shadow-lg rounded-2xl">
-            <div class="card-body">
-                <div class="flex justify-between items-center">
-                    <h2 class="card-title text-teal-600 text-xl">
-                        Overall Progress
-                    </h2>
-                    <span class="badge bg-orange-500 text-white border-none">
-                        69%
-                    </span>
-                </div>
-
-                <progress class="progress text-teal-600 h-3 mt-4" value="124" max="180"></progress>
-
-                <p class="text-sm text-gray-500 mt-3 text-right">
-                    124 / 180 hours
-                </p>
-            </div>
-        </div>
-
-        <!-- CALENDAR + LOG -->
-        <div class="card bg-white shadow-lg rounded-2xl">
-            <div class="card-body">
-
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="card-title text-teal-600 text-2xl">
-                        September 2026
-                    </h2>
-
-                    <!-- Navigation (Action = Orange) -->
-                    <div class="space-x-2">
-                        <button class="btn btn-sm btn-circle bg-orange-500 hover:bg-orange-600 text-white border-none">
-                            ❮
-                        </button>
-                        <button class="btn btn-sm btn-circle bg-orange-500 hover:bg-orange-600 text-white border-none">
-                            ❯
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Day Labels -->
-                <div class="grid grid-cols-7 text-center mb-3 text-sm font-semibold text-gray-400">
-                    <div>Sun</div>
-                    <div>Mon</div>
-                    <div>Tue</div>
-                    <div>Wed</div>
-                    <div>Thu</div>
-                    <div>Fri</div>
-                    <div>Sat</div>
-                </div>
-
-                <!-- Calendar Grid -->
-                <div class="grid grid-cols-7 gap-3 text-center">
-
-                    <!-- Empty -->
-                    <div class="p-3 rounded-xl bg-base-200 text-gray-400">1</div>
-
-                    <!-- Logged Days (ALL teal) -->
-                    <div class="p-3 rounded-xl bg-teal-500 text-white shadow-sm hover:scale-105 transition">
-                        <div class="font-bold">2</div>
-                        <div class="text-xs">8h</div>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-teal-500 text-white shadow-sm hover:scale-105 transition">
-                        <div class="font-bold">3</div>
-                        <div class="text-xs">8h</div>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-base-200">4</div>
-
-                    <div class="p-3 rounded-xl bg-teal-500 text-white shadow-sm hover:scale-105 transition">
-                        <div class="font-bold">5</div>
-                        <div class="text-xs">8h</div>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-base-200">6</div>
-                    <div class="p-3 rounded-xl bg-base-200">7</div>
-
-                </div>
-
-            </div>
-        </div>
-
+    <!-- HEADER -->
+    <div class="text-center space-y-4">
+        <h1 class="text-5xl font-extrabold text-teal-700">
+            Internship Hour Tracker
+        </h1>
+        <p class="text-gray-500 text-lg">
+            Track your internship progress
+        </p>
     </div>
 
-</body>
+    <!-- MAIN LAYOUT -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-</html>
+        <!-- LEFT COLUMN: Big Empty Card -->
+        <div class="col-span-1 lg:col-span-1">
+            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl w-full h-full p-4 overflow-y-auto">
+
+                <!-- Calendar Header -->
+                <div class="flex items-center justify-between mb-4">
+                    <!-- Previous Button -->
+                    <button
+                        class="btn btn-sm btn-circle bg-teal-600 hover:bg-teal-700 text-white font-bold border-none">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+
+                    <!-- Month & Year -->
+                    <div class="text-xl font-bold text-teal-700 text-center flex-1">
+                        February 2026
+                    </div>
+
+                    <!-- Next Button -->
+                    <button
+                        class="btn btn-sm btn-circle bg-teal-600 hover:bg-teal-700 text-white font-bold border-none">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- Calendar Table -->
+                <table class="table w-full text-center">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Day</th>
+                            <th colspan="2">Morning</th>
+                            <th colspan="2">Afternoon</th>
+                        </tr>
+                        <tr>
+                            <th>Arrival</th>
+                            <th>Departure</th>
+                            <th>Arrival</th>
+                            <th>Departure</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in daily_rows %}
+                        <tr class="hover:bg-orange-200 cursor-pointer" data-day="{{ row.day }}"
+                            data-am-in="{{ row.am_in|time:'H:i'|default:'' }}"
+                            data-am-out="{{ row.am_out|time:'H:i'|default:'' }}"
+                            data-pm-in="{{ row.pm_in|time:'H:i'|default:'' }}"
+                            data-pm-out="{{ row.pm_out|time:'H:i'|default:'' }}" onclick="openModal(this)">
+
+                            <td>{{ row.day }}</td>
+
+                            {% if row.is_holiday %}
+                            <td colspan="4" class="text-center font-bold">HOLIDAY</td>
+                            {% elif row.is_weekend %}
+                            <td colspan="4" class="text-center font-bold">WEEKEND</td>
+                            {% else %}
+                            <td>{{ row.am_in|time:"g:i"|default:"-" }}</td>
+                            <td>{{ row.am_out|time:"g:i"|default:"-" }}</td>
+                            <td>{{ row.pm_in|time:"g:i"|default:"-" }}</td>
+                            <td>{{ row.pm_out|time:"g:i"|default:"-" }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+
+                        {% include "partials/log-modal.html" %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Everything else -->
+        <div class="col-span-1 lg:col-span-1 space-y-8">
+
+            <!-- STATS -->
+            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-4 space-y-4">
+                <!-- Horizontal Stats -->
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-title font-bold text-gray-700">Total Logged</div>
+                        <div class="stat-value text-teal-700">{{ total_logged|floatformat:0 }}</div>
+                        <div class="stat-desc font-semibold text-teal-600">Hours Completed</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="stat-title font-bold text-gray-700">Goal</div>
+                        <div class="stat-value text-teal-700">{{ total_required|floatformat:0 }}</div>
+                        <div class="stat-desc font-semibold text-teal-600">Required Hours</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="stat-title font-bold text-gray-700">Remaining</div>
+                        <div class="stat-value text-teal-700">{{ remaining_hours|floatformat:0 }}</div>
+                        <div class="stat-desc font-semibold text-teal-600">{{ percent_remaining }}% left</div>
+                    </div>
+                </div>
+
+                <button
+                    class="btn bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-lg border-none px-6">
+                    VIEW ALL STATS
+                </button>
+            </div>
+
+            <!-- PROGRESS -->
+            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl">
+                <div class="card-body">
+                    <div class="flex justify-between items-center">
+                        <h2 class="card-title text-teal-700 text-xl">Overall Progress</h2>
+                        <span class="badge bg-orange-600 text-white border-none">{{ percent_complete }}%</span>
+                    </div>
+
+                    <progress class="progress text-teal-600 h-4 mt-4" value="67" max="{{ total_required }}"></progress>
+
+                    <p class="text-sm text-gray-500 mt-4 text-right">
+                        {{ total_logged|floatformat:0 }} / {{ total_required|floatformat:0 }} hours
+                    </p>
+                </div>
+            </div>
+
+            <!-- User Info -->
+            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-8 space-y-8">
+                <h2 class="card-title text-teal-700 text-xl">User Information</h2>
+                <div class="space-y-2 text-gray-700">
+                    <p>
+                        <span class="font-semibold">Name:</span>
+                        {{ internship.user.first_name }} {{ internship.user.last_name }}
+                    </p>
+                    <p><span class="font-semibold">Company:</span> {{ internship.company_name }}</p>
+                    <p><span class="font-semibold">Start Date:</span> {{ internship.start_date }}</p>
+                    <p><span class="font-semibold">Supervisor:</span> {{ internship.supervisor_name }}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button
+                        class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-lg border-none flex items-center justify-center gap-2">
+                        <i class="fas fa-edit"></i> EDIT
+                    </button>
+                    <button
+                        class="btn w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg border-none flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-out-alt"></i> LOG OUT
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-8 overflow-x-auto">
+                <h2 class="card-title text-teal-600 mb-4">Recent Activity</h2>
+
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>AM/PM</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Feb 26</td>
+                            <td>08:00</td>
+                            <td>AM</td>
+                            <td>Time In</td>
+                        </tr>
+                        <tr>
+                            <td>Feb 26</td>
+                            <td>12:00</td>
+                            <td>PM</td>
+                            <td>Time Out</td>
+                        </tr>
+                        <tr>
+                            <td>Feb 26</td>
+                            <td>13:00</td>
+                            <td>PM</td>
+                            <td>Time In</td>
+                        </tr>
+                        <tr>
+                            <td>Feb 26</td>
+                            <td>17:00</td>
+                            <td>PM</td>
+                            <td>Time Out</td>
+                        </tr>
+                        <tr>
+                            <td>Feb 25</td>
+                            <td>08:30</td>
+                            <td>AM</td>
+                            <td>Time In</td>
+                        </tr>
+                        <tr>
+                            <td>Feb 25</td>
+                            <td>12:30</td>
+                            <td>PM</td>
+                            <td>Time Out</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function openModal(row) {
+        const day = row.dataset.day;
+
+        // Update the time-edit form
+        document.getElementById('modal-day').value = day;
+        document.getElementById('modal-am-in').value = row.dataset.amIn || "";
+        document.getElementById('modal-am-out').value = row.dataset.amOut || "";
+        document.getElementById('modal-pm-in').value = row.dataset.pmIn || "";
+        document.getElementById('modal-pm-out').value = row.dataset.pmOut || "";
+
+        // Update the hidden day inputs for Holiday and Weekend buttons
+        document.getElementById('holiday-day').value = day;
+        document.getElementById('weekend-day').value = day;
+
+        // Display the date under the header
+        const today = new Date(); // current month/year for context
+        const displayDate = new Date(today.getFullYear(), today.getMonth(), day);
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('modal-date').textContent = displayDate.toLocaleDateString(undefined, options);
+
+        // Open the modal
+        document.getElementById('log-modal').checked = true;
+    }
+</script>
+{% endblock content %}

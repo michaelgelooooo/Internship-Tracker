@@ -3,13 +3,19 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Intern Dashboard</title>
+    <title>{% block title %}Intern Dashboard{% endblock %}</title>
 
+    <!-- Tailwind (via browser CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- DaisyUI -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+
+    <!-- FontAwesome -->
     <script src="https://kit.fontawesome.com/2462155d8a.js" crossorigin="anonymous"></script>
 
     <style>
+        /* Remove number input arrows */
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
@@ -20,11 +26,15 @@
             -moz-appearance: textfield;
         }
     </style>
+
+    {% block head %}{% endblock %}
 </head>
 
-<body class="bg-orange-50/50 p-16 min-h-screen">
-    {% block content %}
-    {% endblock %}
+<body class="bg-orange-50/50 min-h-screen">
+    <main class="p-16">
+        {% block content %}
+        {% endblock %}
+    </main>
 </body>
 
 </html>
