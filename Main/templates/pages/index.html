@@ -4,90 +4,96 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-8">
-
-    <!-- HEADER -->
-    <div class="text-center space-y-4">
-        <h1 class="text-5xl font-extrabold text-teal-700">
-            Internship Hour Tracker
-        </h1>
-        <p class="text-gray-500 text-lg">
-            Track your internship progress
-        </p>
-    </div>
-
     <!-- MAIN LAYOUT -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-        <!-- LEFT COLUMN: Big Empty Card -->
+        <!-- LEFT COLUMN: Calendar Card -->
         <div class="col-span-1 lg:col-span-1">
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl w-full h-full p-4 overflow-y-auto">
 
                 <!-- Calendar Header -->
                 <div class="flex items-center justify-between mb-4">
-                    <!-- Previous Button -->
-                    <button
-                        class="btn btn-sm btn-circle bg-teal-600 hover:bg-teal-700 text-white font-bold border-none">
+                    <a href="?month={{ prev_month }}" class="btn btn-sm btn-circle ...">
                         <i class="fas fa-chevron-left"></i>
-                    </button>
+                    </a>
 
-                    <!-- Month & Year -->
                     <div class="text-xl font-bold text-teal-700 text-center flex-1">
-                        February 2026
+                        {% for month in months_rows %}
+                        {% if month.month_num == current_month %}
+                        {{ month.month }} {{ month.year }}
+                        {% endif %}
+                        {% endfor %}
                     </div>
 
-                    <!-- Next Button -->
-                    <button
-                        class="btn btn-sm btn-circle bg-teal-600 hover:bg-teal-700 text-white font-bold border-none">
+                    <a href="?month={{ next_month }}" class="btn btn-sm btn-circle ...">
                         <i class="fas fa-chevron-right"></i>
-                    </button>
+                    </a>
                 </div>
 
-                <!-- Calendar Table -->
-                <table class="table w-full text-center">
-                    <thead>
-                        <tr>
-                            <th rowspan="2">Day</th>
-                            <th colspan="2">Morning</th>
-                            <th colspan="2">Afternoon</th>
-                        </tr>
-                        <tr>
-                            <th>Arrival</th>
-                            <th>Departure</th>
-                            <th>Arrival</th>
-                            <th>Departure</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in daily_rows %}
-                        <tr class="hover:bg-orange-200 cursor-pointer" data-day="{{ row.day }}"
-                            data-am-in="{{ row.am_in|time:'H:i'|default:'' }}"
-                            data-am-out="{{ row.am_out|time:'H:i'|default:'' }}"
-                            data-pm-in="{{ row.pm_in|time:'H:i'|default:'' }}"
-                            data-pm-out="{{ row.pm_out|time:'H:i'|default:'' }}" onclick="openModal(this)">
+                <!-- Calendar Table for each month -->
+                {% for month in months_rows %}
+                <div class="month-section {% if month.month_num != current_month %}hidden{% endif %}"
+                    id="month-{{ month.month_num }}">
 
-                            <td>{{ row.day }}</td>
+                    <table class="table w-full text-center">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Day</th>
+                                <th colspan="2">Morning</th>
+                                <th colspan="2">Afternoon</th>
+                                <th rowspan="2">Total</th>
+                            </tr>
+                            <tr>
+                                <th>Arrival</th>
+                                <th>Departure</th>
+                                <th>Arrival</th>
+                                <th>Departure</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in month.rows %}
+                            <tr class="hover:bg-orange-200 cursor-pointer" data-day="{{ row.day }}"
+                                data-am-in="{{ row.am_in|time:'H:i'|default:'' }}"
+                                data-am-out="{{ row.am_out|time:'H:i'|default:'' }}"
+                                data-pm-in="{{ row.pm_in|time:'H:i'|default:'' }}"
+                                data-pm-out="{{ row.pm_out|time:'H:i'|default:'' }}" onclick="openModal(this)">
+                                <td>{{ row.day }}</td>
 
-                            {% if row.is_holiday %}
-                            <td colspan="4" class="text-center font-bold">HOLIDAY</td>
-                            {% elif row.is_weekend %}
-                            <td colspan="4" class="text-center font-bold">WEEKEND</td>
-                            {% else %}
-                            <td>{{ row.am_in|time:"g:i"|default:"-" }}</td>
-                            <td>{{ row.am_out|time:"g:i"|default:"-" }}</td>
-                            <td>{{ row.pm_in|time:"g:i"|default:"-" }}</td>
-                            <td>{{ row.pm_out|time:"g:i"|default:"-" }}</td>
-                            {% endif %}
-                        </tr>
-                        {% endfor %}
+                                {% if row.is_holiday %}
+                                <td colspan="4" class="text-center font-bold">HOLIDAY</td>
+                                {% elif row.is_weekend %}
+                                <td colspan="4" class="text-center font-bold">WEEKEND</td>
+                                {% else %}
+                                <td>{{ row.am_in|time:"H:i"|default:"-" }}</td>
+                                <td>{{ row.am_out|time:"H:i"|default:"-" }}</td>
+                                <td>{{ row.pm_in|time:"H:i"|default:"-" }}</td>
+                                <td>{{ row.pm_out|time:"H:i"|default:"-" }}</td>
+                                <td>{{ row.hours|default:"-" }}</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
 
-                        {% include "partials/log-modal.html" %}
-                    </tbody>
-                </table>
+
+
+                {% include "partials/log-modal.html" %}
             </div>
         </div>
 
         <!-- RIGHT COLUMN: Everything else -->
         <div class="col-span-1 lg:col-span-1 space-y-8">
+            <!-- HEADER -->
+            <div class="text-center space-y-4">
+                <h1 class="text-5xl font-extrabold text-teal-700">
+                    Internship Hour Tracker
+                </h1>
+                <p class="text-gray-500 text-lg">
+                    Track your internship progress
+                </p>
+            </div>
 
             <!-- STATS -->
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-4 space-y-4">
@@ -95,7 +101,7 @@
                 <div class="stats">
                     <div class="stat">
                         <div class="stat-title font-bold text-gray-700">Total Logged</div>
-                        <div class="stat-value text-teal-700">{{ total_logged|floatformat:0 }}</div>
+                        <div class="stat-value text-teal-700">{{ total_logged|floatformat:1 }}</div>
                         <div class="stat-desc font-semibold text-teal-600">Hours Completed</div>
                     </div>
 
@@ -126,7 +132,8 @@
                         <span class="badge bg-orange-600 text-white border-none">{{ percent_complete }}%</span>
                     </div>
 
-                    <progress class="progress text-teal-600 h-4 mt-4" value="67" max="{{ total_required }}"></progress>
+                    <progress class="progress text-teal-600 h-4 mt-4" value="{{ total_logged }}"
+                        max="{{ total_required }}"></progress>
 
                     <p class="text-sm text-gray-500 mt-4 text-right">
                         {{ total_logged|floatformat:0 }} / {{ total_required|floatformat:0 }} hours

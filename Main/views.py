@@ -3,13 +3,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from datetime import date
+from datetime import datetime, date, time
 from calendar import monthrange
 from .models import Internship, DailyTimeRecord
 
 
 # -----------------------------
-# 1️⃣ Internship Statistics
+# Internship Statistics
 # -----------------------------
 def get_internship_stats(internship):
     total_logged = internship.total_hours_logged
@@ -30,21 +30,35 @@ def get_internship_stats(internship):
 
 
 # -----------------------------
-# 2️⃣ Month Data
+# Month Data
 # -----------------------------
-def get_current_month_data():
-    today = date.today()
-    first_day_of_month = today.replace(day=1)
-    _, last_day = monthrange(today.year, today.month)
+def get_year_data(year=None):
+    if not year:
+        year = date.today().year
 
-    return {
-        "today": today,
-        "current_month": today.strftime("%B %Y"),
-        "first_day_of_month": first_day_of_month,
-        "days_in_month": list(range(1, last_day + 1)),
-    }
+    year_data = []
+
+    for month in range(1, 13):
+        first_day = date(year, month, 1)
+        _, last_day = monthrange(year, month)
+        days_in_month = list(range(1, last_day + 1))
+
+        year_data.append(
+            {
+                "month": first_day.strftime("%B"),  # Month name
+                "month_num": month,
+                "year": year,
+                "first_day_of_month": first_day,
+                "days_in_month": days_in_month,
+            }
+        )
+
+    return year_data
 
 
+# -----------------------------
+#  Daily Data
+# -----------------------------
 def get_daily_rows(internship, today):
     _, last_day = monthrange(today.year, today.month)
 
@@ -76,59 +90,6 @@ def get_daily_rows(internship, today):
     return rows
 
 
-# -----------------------------
-# 4️⃣ Main View
-# -----------------------------
-@login_required
-def index(request):
-    internship = get_object_or_404(Internship, user=request.user)
-
-    stats = get_internship_stats(internship)
-    month_data = get_current_month_data()
-    daily_rows = get_daily_rows(internship, month_data["today"])
-
-    context = {
-        "internship": internship,
-        **stats,
-        **month_data,
-        "daily_rows": daily_rows,
-    }
-
-    return render(request, "pages/index.html", context)
-
-
-@login_required
-def update_daily_record(request):
-    if request.method == "POST":
-        # Get the internship for the logged-in user
-        internship = get_object_or_404(Internship, user=request.user)
-
-        # Get submitted form data
-        day = int(request.POST.get("day"))
-        am_in = request.POST.get("am_in") or None
-        am_out = request.POST.get("am_out") or None
-        pm_in = request.POST.get("pm_in") or None
-        pm_out = request.POST.get("pm_out") or None
-
-        # Build the date for the record
-        today = date.today()
-        record_date = today.replace(day=day)
-
-        # Update existing record or create a new one
-        DailyTimeRecord.objects.update_or_create(
-            internship=internship,
-            date=record_date,
-            defaults={
-                "am_in": am_in,
-                "am_out": am_out,
-                "pm_in": pm_in,
-                "pm_out": pm_out,
-            },
-        )
-
-    return redirect("index")
-
-
 @login_required
 def mark_day(request):
     if request.method == "POST":
@@ -155,6 +116,106 @@ def mark_day(request):
         record.save()
 
     return redirect("index")
+
+
+@login_required
+def update_daily_record(request):
+    if request.method == "POST":
+        internship = get_object_or_404(Internship, user=request.user)
+        day = int(request.POST.get("day"))
+
+        # Helper to convert string to time
+        def str_to_time(s):
+            if not s:
+                return None
+            return datetime.strptime(s.strip(), "%H:%M").time()
+
+        am_in = str_to_time(request.POST.get("am_in"))
+        am_out = str_to_time(request.POST.get("am_out"))
+        pm_in = str_to_time(request.POST.get("pm_in"))
+        pm_out = str_to_time(request.POST.get("pm_out"))
+
+        record_date = date.today().replace(day=day)
+
+        # ✅ Get or create the DTR
+        record, created = DailyTimeRecord.objects.get_or_create(
+            internship=internship, date=record_date
+        )
+
+        # ✅ Update fields manually
+        record.am_in = am_in
+        record.am_out = am_out
+        record.pm_in = pm_in
+        record.pm_out = pm_out
+
+        # ✅ Save triggers save() and post_save signals
+        record.save()
+
+    return redirect("index")
+
+
+@login_required
+def index(request):
+    internship = get_object_or_404(Internship, user=request.user)
+    stats = get_internship_stats(internship)
+
+    # Get current month from query param, default to today
+    current_month = request.GET.get("month")
+    if current_month:
+        current_month = int(current_month)
+    else:
+        current_month = date.today().month
+
+    year = date.today().year
+
+    # Compute prev/next month for buttons
+    prev_month = current_month - 1 if current_month > 1 else 12
+    next_month = current_month + 1 if current_month < 12 else 1
+
+    # Get all DTRs for the year
+    daily_records = DailyTimeRecord.objects.filter(
+        internship=internship, date__year=year
+    )
+    records_map = {(r.date.month, r.date.day): r for r in daily_records}
+
+    # Build data for all months
+    months_rows = []
+    for month_num in range(1, 13):
+        _, last_day = monthrange(year, month_num)
+        rows = []
+        for day in range(1, last_day + 1):
+            record = records_map.get((month_num, day))
+            rows.append(
+                {
+                    "day": day,
+                    "am_in": record.am_in if record else None,
+                    "am_out": record.am_out if record else None,
+                    "pm_in": record.pm_in if record else None,
+                    "pm_out": record.pm_out if record else None,
+                    "hours": record.total_hours if record else None,
+                    "is_holiday": record.is_holiday if record else False,
+                    "is_weekend": record.is_weekend if record else False,
+                }
+            )
+        months_rows.append(
+            {
+                "month": date(year, month_num, 1).strftime("%B"),
+                "month_num": month_num,
+                "year": year,
+                "rows": rows,
+            }
+        )
+
+    context = {
+        "internship": internship,
+        **stats,
+        "months_rows": months_rows,
+        "current_month": current_month,
+        "prev_month": prev_month,
+        "next_month": next_month,
+    }
+
+    return render(request, "pages/index.html", context)
 
 
 def auth(request):
