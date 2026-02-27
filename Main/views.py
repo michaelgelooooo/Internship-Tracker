@@ -2,30 +2,71 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.models import Sum
 from django.contrib import messages
-from datetime import datetime, date, time
+from datetime import datetime, date
 from calendar import monthrange
 from .models import Internship, DailyTimeRecord
 
 
-# -----------------------------
-# Internship Statistics
-# -----------------------------
-def get_internship_stats(internship):
+def get_internship_stats(internship, month=None):
+    """
+    Returns both monthly and overall internship statistics.
+    `month` is an integer (1-12) for monthly stats. Defaults to current month.
+    """
+    today = date.today()
+    if not month:
+        month = today.month
+
+    # -------------------
+    # Overall stats
+    # -------------------
     total_logged = internship.total_hours_logged
     total_required = internship.total_hours_required
     remaining_hours = max(total_required - total_logged, 0)
-
     percent_complete = (
         int((total_logged / total_required) * 100) if total_required else 0
     )
+    percent_remaining = 100 - percent_complete
+
+    # Total days logged overall
+    total_days_logged = DailyTimeRecord.objects.filter(
+        internship=internship,
+        is_holiday=False,
+        is_weekend=False
+    ).count()
+
+    # Average hours per work day
+    total_avg = round(total_logged / total_days_logged, 1) if total_days_logged > 0 else 0
+
+    # -------------------
+    # Monthly stats
+    # -------------------
+    # monthly_records = DailyTimeRecord.objects.filter(
+    #     internship=internship,
+    #     date__month=month,
+    #     date__year=today.year,
+    #     is_holiday=False,
+    #     is_weekend=False
+    # )
+
+    # monthly_hours = monthly_records.aggregate(total=Sum("total_hours"))["total"] or 0
+    # monthly_days = monthly_records.count()
+    # monthly_avg = round(monthly_hours / monthly_days, 1) if monthly_days > 0 else 0
 
     return {
+        # Overall
         "total_logged": total_logged,
         "total_required": total_required,
         "remaining_hours": remaining_hours,
         "percent_complete": percent_complete,
-        "percent_remaining": 100 - percent_complete,
+        "percent_remaining": percent_remaining,
+        "total_days_logged": total_days_logged,
+        "total_avg": total_avg,
+        # Monthly
+        # "monthly_hours": monthly_hours,
+        # "monthly_days": monthly_days,
+        # "monthly_avg": monthly_avg,
     }
 
 
@@ -155,6 +196,32 @@ def update_daily_record(request):
 
 
 @login_required
+def delete_daily_record(request):
+    """
+    Deletes a DailyTimeRecord for the given day of the current month.
+    """
+    if request.method == "POST":
+        internship = get_object_or_404(Internship, user=request.user)
+        day = request.POST.get("day")
+
+        if not day:
+            return redirect("index")  # safety check
+
+        day = int(day)
+        today = date.today()
+        record_date = today.replace(day=day)
+
+        # Fetch the record and delete if exists
+        record = DailyTimeRecord.objects.filter(
+            internship=internship, date=record_date
+        ).first()
+        if record:
+            record.delete()
+
+    return redirect("index")
+
+
+@login_required
 def index(request):
     internship = get_object_or_404(Internship, user=request.user)
     stats = get_internship_stats(internship)
@@ -255,6 +322,8 @@ def register_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
         company_name = request.POST.get("company_name")
@@ -277,7 +346,7 @@ def register_view(request):
 
         # Create user
         user = User.objects.create_user(
-            username=username, email=email, password=password1
+            username=username, email=email, password=password1, first_name=first_name, last_name=last_name
         )
 
         # Create internship record
@@ -293,6 +362,54 @@ def register_view(request):
         return redirect("index")
 
     return redirect("auth")
+
+
+
+@login_required
+def update_user_info(request):
+    if request.method == "POST":
+        user = request.user
+        internship = get_object_or_404(Internship, user=user)
+
+        # Get form data
+        username = request.POST.get("username").strip()
+        email = request.POST.get("email").strip()
+        first_name = request.POST.get("first_name").strip()
+        last_name = request.POST.get("last_name").strip()
+        company_name = request.POST.get("company_name").strip()
+        supervisor_name = request.POST.get("supervisor_name").strip()
+        start_date = request.POST.get("start_date")
+        total_hours_required = request.POST.get("total_hours_required")
+
+        # Validate unique username
+        if User.objects.filter(username=username).exclude(pk=user.pk).exists():
+            messages.error(request, "Username already exists.")
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        # Validate unique email
+        if User.objects.filter(email=email).exclude(pk=user.pk).exists():
+            messages.error(request, "Email already registered.")
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        # Update user fields
+        user.username = username
+        user.email = email
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
+
+        # Update internship fields
+        internship.company_name = company_name
+        internship.supervisor_name = supervisor_name
+        internship.start_date = start_date
+        internship.total_hours_required = total_hours_required
+        internship.save()
+
+        messages.success(request, "User information updated successfully.")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    # Fallback
+    return redirect("index")
 
 
 def logout_view(request):

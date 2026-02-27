@@ -3,81 +3,23 @@
 {% load static %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-8">
+<div class="max-w-4xl mx-auto space-y-8">
+    <!-- HEADER -->
+    <!-- <div class="text-center space-y-2">
+        <h1 class="text-5xl font-extrabold text-teal-700">
+            Internship Hour Tracker
+        </h1>
+        <p class="text-gray-500 text-lg">
+            Track your internship progress
+        </p>
+    </div> -->
     <!-- MAIN LAYOUT -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
         <!-- LEFT COLUMN: Calendar Card -->
         <div class="col-span-1 lg:col-span-1">
-            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl w-full h-full p-4 overflow-y-auto">
-
-                <!-- Calendar Header -->
-                <div class="flex items-center justify-between mb-4">
-                    <a href="?month={{ prev_month }}" class="btn btn-sm btn-circle ...">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-
-                    <div class="text-xl font-bold text-teal-700 text-center flex-1">
-                        {% for month in months_rows %}
-                        {% if month.month_num == current_month %}
-                        {{ month.month }} {{ month.year }}
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-
-                    <a href="?month={{ next_month }}" class="btn btn-sm btn-circle ...">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </div>
-
-                <!-- Calendar Table for each month -->
-                {% for month in months_rows %}
-                <div class="month-section {% if month.month_num != current_month %}hidden{% endif %}"
-                    id="month-{{ month.month_num }}">
-
-                    <table class="table w-full text-center">
-                        <thead>
-                            <tr>
-                                <th rowspan="2">Day</th>
-                                <th colspan="2">Morning</th>
-                                <th colspan="2">Afternoon</th>
-                                <th rowspan="2">Total</th>
-                            </tr>
-                            <tr>
-                                <th>Arrival</th>
-                                <th>Departure</th>
-                                <th>Arrival</th>
-                                <th>Departure</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for row in month.rows %}
-                            <tr class="hover:bg-orange-200 cursor-pointer" data-day="{{ row.day }}"
-                                data-am-in="{{ row.am_in|time:'H:i'|default:'' }}"
-                                data-am-out="{{ row.am_out|time:'H:i'|default:'' }}"
-                                data-pm-in="{{ row.pm_in|time:'H:i'|default:'' }}"
-                                data-pm-out="{{ row.pm_out|time:'H:i'|default:'' }}" onclick="openModal(this)">
-                                <td>{{ row.day }}</td>
-
-                                {% if row.is_holiday %}
-                                <td colspan="4" class="text-center font-bold">HOLIDAY</td>
-                                {% elif row.is_weekend %}
-                                <td colspan="4" class="text-center font-bold">WEEKEND</td>
-                                {% else %}
-                                <td>{{ row.am_in|time:"H:i"|default:"-" }}</td>
-                                <td>{{ row.am_out|time:"H:i"|default:"-" }}</td>
-                                <td>{{ row.pm_in|time:"H:i"|default:"-" }}</td>
-                                <td>{{ row.pm_out|time:"H:i"|default:"-" }}</td>
-                                <td>{{ row.hours|default:"-" }}</td>
-                                {% endif %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% endfor %}
-
-
+            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl w-full p-4 overflow-y-auto">
+                {% include "partials/log-calendar.html" %}
 
                 {% include "partials/log-modal.html" %}
             </div>
@@ -85,64 +27,72 @@
 
         <!-- RIGHT COLUMN: Everything else -->
         <div class="col-span-1 lg:col-span-1 space-y-8">
-            <!-- HEADER -->
-            <div class="text-center space-y-4">
-                <h1 class="text-5xl font-extrabold text-teal-700">
-                    Internship Hour Tracker
-                </h1>
-                <p class="text-gray-500 text-lg">
-                    Track your internship progress
-                </p>
-            </div>
-
             <!-- STATS -->
-            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-4 space-y-4">
-                <!-- Horizontal Stats -->
+            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl space-y-2">
+
+                <!-- ROW 1: Monthly Stats
+                <div class="stats mb-4">
+                    <div class="stat">
+                        <div class="stat-title font-bold text-gray-700">Hours This Month</div>
+                        <div class="stat-value text-teal-700">{{ monthly_hours|floatformat:1 }}</div>
+                        <div class="stat-desc font-semibold text-teal-600">Logged Hours</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="stat-title font-bold text-gray-700">Days This Month</div>
+                        <div class="stat-value text-teal-700">{{ monthly_days }}</div>
+                        <div class="stat-desc font-semibold text-teal-600">Logged Days</div>
+                    </div>
+
+                    <div class="stat">
+                        <div class="stat-title font-bold text-gray-700">Avg Hours/Day</div>
+                        <div class="stat-value text-teal-700">{{ monthly_avg|floatformat:1 }}</div>
+                        <div class="stat-desc font-semibold text-teal-600">Average</div>
+                    </div>
+                </div> -->
+
+                <!-- ROW 2: Overall Stats -->
                 <div class="stats">
                     <div class="stat">
-                        <div class="stat-title font-bold text-gray-700">Total Logged</div>
-                        <div class="stat-value text-teal-700">{{ total_logged|floatformat:1 }}</div>
-                        <div class="stat-desc font-semibold text-teal-600">Hours Completed</div>
+                        <div class="stat-title font-bold text-gray-700">Hours</div>
+                        <div class="stat-value text-teal-700">{{ total_logged|stringformat:"g" }}</div>
+                        <div class="stat-desc font-semibold text-teal-600">Completed</div>
                     </div>
 
                     <div class="stat">
-                        <div class="stat-title font-bold text-gray-700">Goal</div>
-                        <div class="stat-value text-teal-700">{{ total_required|floatformat:0 }}</div>
-                        <div class="stat-desc font-semibold text-teal-600">Required Hours</div>
+                        <div class="stat-title font-bold text-gray-700">Days</div>
+                        <div class="stat-value text-teal-700">{{ total_days_logged }}</div>
+                        <div class="stat-desc font-semibold text-teal-600">Logged</div>
                     </div>
 
                     <div class="stat">
-                        <div class="stat-title font-bold text-gray-700">Remaining</div>
-                        <div class="stat-value text-teal-700">{{ remaining_hours|floatformat:0 }}</div>
-                        <div class="stat-desc font-semibold text-teal-600">{{ percent_remaining }}% left</div>
+                        <div class="stat-title font-bold text-gray-700">Avg. Hours</div>
+                        <div class="stat-value text-teal-700">{{ total_avg|stringformat:"g" }}</div>
+                        <div class="stat-desc font-semibold text-teal-600">Per Day</div>
                     </div>
                 </div>
 
-                <button
-                    class="btn bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-lg border-none px-6">
-                    VIEW ALL STATS
-                </button>
             </div>
 
             <!-- PROGRESS -->
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl">
-                <div class="card-body">
+                <div class="card-body p-4">
                     <div class="flex justify-between items-center">
                         <h2 class="card-title text-teal-700 text-xl">Overall Progress</h2>
                         <span class="badge bg-orange-600 text-white border-none">{{ percent_complete }}%</span>
                     </div>
 
-                    <progress class="progress text-teal-600 h-4 mt-4" value="{{ total_logged }}"
+                    <progress class="progress text-teal-600 h-2 mt-2" value="{{ total_logged }}"
                         max="{{ total_required }}"></progress>
 
-                    <p class="text-sm text-gray-500 mt-4 text-right">
+                    <p class="text-sm text-gray-500 mt-2 text-right">
                         {{ total_logged|floatformat:0 }} / {{ total_required|floatformat:0 }} hours
                     </p>
                 </div>
             </div>
 
             <!-- User Info -->
-            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-8 space-y-8">
+            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-4 space-y-4">
                 <h2 class="card-title text-teal-700 text-xl">User Information</h2>
                 <div class="space-y-2 text-gray-700">
                     <p>
@@ -151,74 +101,26 @@
                     </p>
                     <p><span class="font-semibold">Company:</span> {{ internship.company_name }}</p>
                     <p><span class="font-semibold">Start Date:</span> {{ internship.start_date }}</p>
+                    <p>
+                        <span class="font-semibold">Required Hours:</span>
+                        {{ internship.total_hours_required|floatformat:0 }} Hours
+                    </p>
                     <p><span class="font-semibold">Supervisor:</span> {{ internship.supervisor_name }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <button
-                        class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-lg border-none flex items-center justify-center gap-2">
+                        class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-lg border-none flex items-center justify-center gap-2"
+                        onclick="document.getElementById('user-info-modal').showModal()">
                         <i class="fas fa-edit"></i> EDIT
                     </button>
-                    <button
+                    {% include "partials/user-info-modal.html" %}
+
+                    <a href="{% url 'logout' %}"
                         class="btn w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg border-none flex items-center justify-center gap-2">
                         <i class="fas fa-sign-out-alt"></i> LOG OUT
-                    </button>
+                    </a>
                 </div>
             </div>
-
-            <!-- Recent Activity -->
-            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-8 overflow-x-auto">
-                <h2 class="card-title text-teal-600 mb-4">Recent Activity</h2>
-
-                <table class="table w-full">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>AM/PM</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Feb 26</td>
-                            <td>08:00</td>
-                            <td>AM</td>
-                            <td>Time In</td>
-                        </tr>
-                        <tr>
-                            <td>Feb 26</td>
-                            <td>12:00</td>
-                            <td>PM</td>
-                            <td>Time Out</td>
-                        </tr>
-                        <tr>
-                            <td>Feb 26</td>
-                            <td>13:00</td>
-                            <td>PM</td>
-                            <td>Time In</td>
-                        </tr>
-                        <tr>
-                            <td>Feb 26</td>
-                            <td>17:00</td>
-                            <td>PM</td>
-                            <td>Time Out</td>
-                        </tr>
-                        <tr>
-                            <td>Feb 25</td>
-                            <td>08:30</td>
-                            <td>AM</td>
-                            <td>Time In</td>
-                        </tr>
-                        <tr>
-                            <td>Feb 25</td>
-                            <td>12:30</td>
-                            <td>PM</td>
-                            <td>Time Out</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
         </div>
     </div>
 </div>
@@ -237,6 +139,8 @@
         // Update the hidden day inputs for Holiday and Weekend buttons
         document.getElementById('holiday-day').value = day;
         document.getElementById('weekend-day').value = day;
+
+        document.getElementById('delete-day').value = day;
 
         // Display the date under the header
         const today = new Date(); // current month/year for context
