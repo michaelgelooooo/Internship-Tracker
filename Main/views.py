@@ -78,38 +78,70 @@ def get_year_data(year=None):
     return year_data
 
 
-# -----------------------------
-#  Daily Data
-# -----------------------------
-def get_daily_rows(internship, today):
-    _, last_day = monthrange(today.year, today.month)
-
-    daily_records = DailyTimeRecord.objects.filter(
-        internship=internship, date__month=today.month, date__year=today.year
-    )
-
-    # Map records by day number
-    records_map = {record.date.day: record for record in daily_records}
-
-    rows = []
-
-    for day in range(1, last_day + 1):
-        record = records_map.get(day)
-
-        rows.append(
+def build_months_rows(records_map, year):
+    """
+    Returns list of months with daily records for template rendering
+    """
+    months_rows = []
+    for month_num in range(1, 13):
+        _, last_day = monthrange(year, month_num)
+        rows = []
+        for day in range(1, last_day + 1):
+            record = records_map.get((month_num, day))
+            rows.append(
+                {
+                    "day": day,
+                    "am_in": record.am_in if record else None,
+                    "am_out": record.am_out if record else None,
+                    "pm_in": record.pm_in if record else None,
+                    "pm_out": record.pm_out if record else None,
+                    "hours": record.total_hours if record else None,
+                    "is_holiday": record.is_holiday if record else False,
+                    "is_weekend": record.is_weekend if record else False,
+                }
+            )
+        months_rows.append(
             {
-                "day": day,
-                "am_in": record.am_in if record else None,
-                "am_out": record.am_out if record else None,
-                "pm_in": record.pm_in if record else None,
-                "pm_out": record.pm_out if record else None,
-                "hours": record.total_hours if record else None,
-                "is_holiday": record.is_holiday if record else False,
-                "is_weekend": record.is_weekend if record else False,
+                "month": date(year, month_num, 1).strftime("%B"),
+                "month_num": month_num,
+                "year": year,
+                "rows": rows,
             }
         )
+    return months_rows
 
-    return rows
+
+def get_daily_records(internship, year):
+    """
+    Returns a dictionary of {(month, day): DailyTimeRecord} for the internship in the given year
+    """
+    daily_records = DailyTimeRecord.objects.filter(
+        internship=internship, date__year=year
+    )
+    return {(r.date.month, r.date.day): r for r in daily_records}
+
+
+def get_next_quick_log_action(internship):
+    today = timezone.localdate()
+    record = DailyTimeRecord.objects.filter(internship=internship, date=today).first()
+
+    if not record or not record.am_in:
+        return "am_in"
+    if not record.am_out:
+        return "am_out"
+    if not record.pm_in:
+        return "pm_in"
+    if not record.pm_out:
+        return "pm_out"
+    return None
+
+
+ACTION_LABELS = {
+    "am_in": "AM Time In",
+    "am_out": "AM Time Out",
+    "pm_in": "PM Time In",
+    "pm_out": "PM Time Out",
+}
 
 
 @login_required
@@ -119,7 +151,7 @@ def mark_day(request):
         day = int(request.POST.get("day"))
         mark_type = request.POST.get("mark")
 
-        # Build the date
+        # Build the date for this month/year
         today = date.today()
         record_date = today.replace(day=day)
 
@@ -128,13 +160,25 @@ def mark_day(request):
             internship=internship, date=record_date
         )
 
-        # Update holiday or weekend
+        # Toggle logic
         if mark_type == "holiday":
-            record.is_holiday = True
+            if record.is_holiday:
+                # Already holiday → toggle off
+                record.is_holiday = False
+            else:
+                # Not holiday → set holiday, clear weekend
+                record.is_holiday = True
+                record.is_weekend = False
         elif mark_type == "weekend":
-            record.is_weekend = True
+            if record.is_weekend:
+                # Already weekend → toggle off
+                record.is_weekend = False
+            else:
+                # Not weekend → set weekend, clear holiday
+                record.is_weekend = True
+                record.is_holiday = False
 
-        # Recalculate total_hours if necessary
+        # Save changes
         record.save()
 
     return redirect("index")
@@ -235,88 +279,21 @@ def index(request):
     internship = get_object_or_404(Internship, user=request.user)
     stats = get_internship_stats(internship)
 
-    # Get current month from query param, default to today
-    current_month = request.GET.get("month")
-    if current_month:
-        current_month = int(current_month)
-    else:
-        current_month = date.today().month
-
+    # Current month
+    current_month = int(request.GET.get("month", date.today().month))
     year = date.today().year
 
-    # Compute prev/next month for buttons
+    # Prev/Next month
     prev_month = current_month - 1 if current_month > 1 else 12
     next_month = current_month + 1 if current_month < 12 else 1
 
-    # Get all DTRs for the year
-    daily_records = DailyTimeRecord.objects.filter(
-        internship=internship, date__year=year
-    )
-    records_map = {(r.date.month, r.date.day): r for r in daily_records}
+    # Build daily records
+    records_map = get_daily_records(internship, year)
+    months_rows = build_months_rows(records_map, year)
 
-    # Build data for all months
-    months_rows = []
-    for month_num in range(1, 13):
-        _, last_day = monthrange(year, month_num)
-        rows = []
-        for day in range(1, last_day + 1):
-            record = records_map.get((month_num, day))
-            rows.append(
-                {
-                    "day": day,
-                    "am_in": record.am_in if record else None,
-                    "am_out": record.am_out if record else None,
-                    "pm_in": record.pm_in if record else None,
-                    "pm_out": record.pm_out if record else None,
-                    "hours": record.total_hours if record else None,
-                    "is_holiday": record.is_holiday if record else False,
-                    "is_weekend": record.is_weekend if record else False,
-                }
-            )
-        months_rows.append(
-            {
-                "month": date(year, month_num, 1).strftime("%B"),
-                "month_num": month_num,
-                "year": year,
-                "rows": rows,
-            }
-        )
-
-    # ------------------------------
-    # Determine next action for Quick Log
-    # ------------------------------
-    def get_next_action(internship):
-        today = timezone.localdate()
-
-        record = DailyTimeRecord.objects.filter(
-            internship=internship, date=today
-        ).first()
-
-        if not record or not record.am_in:
-            return "am_in"
-        if not record.am_out:
-            return "am_out"
-        if not record.pm_in:
-            return "pm_in"
-        if not record.pm_out:
-            return "pm_out"
-
-        return None
-
-    next_action = get_next_action(internship)
-
-    # Map to human-readable label with fallback
-    ACTION_LABELS = {
-        "am_in": "AM Time In",
-        "am_out": "AM Time Out",
-        "pm_in": "PM Time In",
-        "pm_out": "PM Time Out",
-    }
-
-    if next_action:
-        next_action_label = ACTION_LABELS.get(next_action, "")
-    else:
-        next_action_label = "No more actions for today"  # <-- display this if no more actions
+    # Quick log
+    next_action = get_next_quick_log_action(internship)
+    next_action_label = ACTION_LABELS.get(next_action, "No more actions for today")
 
     context = {
         "internship": internship,
@@ -326,7 +303,7 @@ def index(request):
         "prev_month": prev_month,
         "next_month": next_month,
         "next_action": next_action,
-        "next_action_label": next_action_label,  # <-- pass label to template
+        "next_action_label": next_action_label,
     }
 
     return render(request, "pages/index.html", context)

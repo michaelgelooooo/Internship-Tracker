@@ -41,7 +41,8 @@
             <tr class="hover:bg-orange-200 cursor-pointer" data-day="{{ row.day }}"
                 data-am-in="{{ row.am_in|time:'H:i'|default:'' }}" data-am-out="{{ row.am_out|time:'H:i'|default:'' }}"
                 data-pm-in="{{ row.pm_in|time:'H:i'|default:'' }}" data-pm-out="{{ row.pm_out|time:'H:i'|default:'' }}"
-                onclick="openModal(this)">
+                data-is-holiday="{{ row.is_holiday|yesno:'true,false' }}"
+                data-is-weekend="{{ row.is_weekend|yesno:'true,false' }}" onclick="openModal(this)">
                 <td class="font-semibold">{{ row.day }}</td>
 
                 {% if row.is_holiday %}
@@ -55,7 +56,7 @@
                 <td>{{ row.pm_out|time:"H:i"|default:"-" }}</td>
                 <td class="font-semibold">
                     {% if row.hours %}
-                        {{ row.hours|stringformat:"g" }}
+                    {{ row.hours|stringformat:"g" }}
                     {% else %}
                     -
                     {% endif %}
