@@ -1,18 +1,12 @@
 <dialog class="modal" id="user-info-modal">
     <div class="modal-box relative bg-orange-100 rounded-2xl shadow-lg p-8 max-w-xl">
-
-        <!-- Close button -->
         <button type="button" class="btn btn-sm btn-circle absolute right-4 top-4"
             onclick="document.getElementById('user-info-modal').close()">✕</button>
-
-        <!-- Modal title -->
         <h3 class="text-2xl font-bold text-teal-700 text-center mb-8">EDIT USER INFORMATION</h3>
 
-        <!-- User Info Form -->
         <form method="POST" action="{% url 'update-info' %}" class="space-y-4">
             {% csrf_token %}
 
-            <!-- Username -->
             <div>
                 <label class="label font-semibold text-teal-800">Username</label>
                 <input type="text" name="username" value="{{ user.username }}"
@@ -20,7 +14,6 @@
                     required>
             </div>
 
-            <!-- First & Last Name -->
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="label font-semibold text-teal-800">First Name</label>
@@ -28,6 +21,7 @@
                         class="input input-bordered input-lg w-full rounded-lg focus:border-teal-500 focus:ring focus:ring-teal-100"
                         required>
                 </div>
+
                 <div>
                     <label class="label font-semibold text-teal-800">Last Name</label>
                     <input type="text" name="last_name" value="{{ user.last_name }}"
@@ -36,7 +30,6 @@
                 </div>
             </div>
 
-            <!-- Email -->
             <div>
                 <label class="label font-semibold text-teal-800">Email</label>
                 <input type="email" name="email" value="{{ user.email }}"
@@ -44,7 +37,6 @@
                     required>
             </div>
 
-            <!-- Company Name -->
             <div>
                 <label class="label font-semibold text-teal-800">Company Name</label>
                 <input type="text" name="company_name" value="{{ internship.company_name }}"
@@ -52,7 +44,6 @@
                     required>
             </div>
 
-            <!-- Supervisor Name -->
             <div>
                 <label class="label font-semibold text-teal-800">Supervisor Name</label>
                 <input type="text" name="supervisor_name" value="{{ internship.supervisor_name }}"
@@ -60,7 +51,6 @@
                     required>
             </div>
 
-            <!-- Start Date & Total Hours Required -->
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="label font-semibold text-teal-800">Start Date</label>
@@ -68,6 +58,7 @@
                         class="input input-bordered input-lg w-full rounded-lg focus:border-teal-500 focus:ring focus:ring-teal-100"
                         required>
                 </div>
+
                 <div>
                     <label class="label font-semibold text-teal-800">Total Hours</label>
                     <input type="number" name="total_hours_required" min="0"
@@ -77,13 +68,15 @@
                 </div>
             </div>
 
-            <!-- Action buttons -->
             <div class="modal-action flex justify-end gap-4 mt-8">
-                <button type="button" class="btn flex-1 border-none bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg"
+                <button type="button"
+                    class="btn flex-1 border-none bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg"
                     onclick="document.getElementById('user-info-modal').close()">
                     CANCEL
                 </button>
-                <button type="submit" class="btn flex-1 border-none bg-teal-600 hover:bg-teal-700 text-white rounded-lg">
+                
+                <button type="submit"
+                    class="btn flex-1 border-none bg-teal-600 hover:bg-teal-700 text-white rounded-lg">
                     SAVE
                 </button>
             </div>

@@ -1,25 +1,20 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Intern Dashboard{% endblock %}</title>
+    <title>
+        {% block title %}Intern Dashboard{% endblock %}
+    </title>
 
     <link rel="icon" type="image/svg+xml" href="{% static 'images/hourglass-half-solid-full.svg' %}">
 
-    <!-- Tailwind (via browser CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
-    <!-- DaisyUI -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-
-    <!-- FontAwesome -->
     <script src="https://kit.fontawesome.com/2462155d8a.js" crossorigin="anonymous"></script>
 
     <style>
-        /* Remove number input arrows */
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
@@ -30,8 +25,6 @@
             -moz-appearance: textfield;
         }
     </style>
-
-    {% block head %}{% endblock %}
 </head>
 
 <body class="bg-orange-50/50 min-h-screen">

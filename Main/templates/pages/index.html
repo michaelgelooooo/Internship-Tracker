@@ -5,65 +5,47 @@
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-8">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-        <!-- LEFT COLUMN: Calendar Card -->
         <div class="col-span-1 lg:col-span-1">
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl w-full p-4 overflow-y-auto">
                 {% include "partials/log-calendar.html" %}
-
                 {% include "partials/log-modal.html" %}
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: Everything else -->
         <div class="col-span-1 lg:col-span-1 space-y-8">
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-6 space-y-4">
-
-                <!-- Header -->
                 <h2 class="card-title text-teal-700 text-xl">Quick Log</h2>
 
                 <form class="space-y-2" method="post" action="{% url 'quick-log' %}">
                     {% csrf_token %}
 
-                    <!-- Row 1: Date & Time -->
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col">
                             <label class="label font-semibold text-teal-800">Date</label>
-                            <input type="date" name="log_date"
-                                class="input input-bordered w-full rounded-lg"
-                                readonly>
+                            <input type="date" name="log_date" class="input input-bordered w-full rounded-lg" readonly>
                         </div>
-
                         <div class="flex flex-col">
                             <label class="label font-semibold text-teal-800">Time</label>
-                            <input type="time" name="log_time"
-                                class="input input-bordered w-full rounded-lg"
-                                readonly>
+                            <input type="time" name="log_time" class="input input-bordered w-full rounded-lg" readonly>
                         </div>
                     </div>
 
-                    <!-- Row 2: Action -->
-                    <!-- Row 2: Action -->
                     <div class="flex flex-col">
                         <label class="label font-semibold text-teal-800">Action</label>
                         <input type="text" name="log_action_display" value="{{ next_action_label }}"
-                            class="input input-bordered w-full rounded-lg pointer-events-none"
-                            readonly>
-                        <!-- Hidden field for form submission -->
+                            class="input input-bordered w-full rounded-lg pointer-events-none" readonly>
                         <input type="hidden" name="log_action" value="{{ next_action }}">
                     </div>
 
-                    <!-- Row 3: Button -->
                     <div class="pt-2">
                         <button type="submit"
                             class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg py-3">
-                            Log Now
+                            <i class="fas fa-business-time"></i> LOG NOW
                         </button>
                     </div>
-
                 </form>
             </div>
-            <!-- STATS -->
+
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl space-y-2">
                 <div class="stats">
                     <div class="stat">
@@ -84,10 +66,13 @@
                         <div class="stat-desc font-semibold text-teal-600">Per Day</div>
                     </div>
                 </div>
-
+                <div class="px-8 pb-4">
+                    <button type="submit"
+                    class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg py-3">
+                    <i class="fas fa-chart-line"></i> VIEW ALL STATS
+                </button></div>
             </div>
 
-            <!-- PROGRESS -->
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl">
                 <div class="card-body p-4">
                     <div class="flex justify-between items-center">
@@ -104,9 +89,9 @@
                 </div>
             </div>
 
-            <!-- User Info -->
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-4 space-y-4">
                 <h2 class="card-title text-teal-700 text-xl">User Information</h2>
+
                 <div class="space-y-2 text-gray-700">
                     <p>
                         <span class="font-semibold">Name:</span>
@@ -120,12 +105,14 @@
                     </p>
                     <p><span class="font-semibold">Supervisor:</span> {{ internship.supervisor_name }}</p>
                 </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <button
                         class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-lg border-none flex items-center justify-center gap-2"
                         onclick="document.getElementById('user-info-modal').showModal()">
                         <i class="fas fa-edit"></i> EDIT
                     </button>
+
                     {% include "partials/user-info-modal.html" %}
 
                     <a href="{% url 'logout' %}"

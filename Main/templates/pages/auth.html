@@ -6,19 +6,19 @@
 <div class="flex items-center justify-center w-full">
     <div class="w-full max-w-xl">
         <div class="tabs tabs-box tabs-xl justify-center bg-orange-100 p-8 shadow-lg">
-
-            <input type="radio" name="auth_tabs" class="tab [--tab-bg:#FFF7ED] font-bold text-teal-800 text-center flex-1 mb-4" id="login-tab"
+            <input type="radio" name="auth_tabs"
+                class="tab [--tab-bg:#FFF7ED] font-bold text-teal-800 text-center flex-1 mb-4" id="login-tab"
                 aria-label="LOG-IN" checked />
             <div class="tab-content">
                 {% include 'partials/login.html' %}
             </div>
-
-            <input type="radio" name="auth_tabs" class="tab [--tab-bg:#FFF7ED] font-bold text-teal-800 text-center flex-1 mb-4" id="register-tab"
+            
+            <input type="radio" name="auth_tabs"
+                class="tab [--tab-bg:#FFF7ED] font-bold text-teal-800 text-center flex-1 mb-4" id="register-tab"
                 aria-label="REGISTER" />
             <div class="tab-content">
                 {% include 'partials/register.html' %}
             </div>
-
         </div>
     </div>
 </div>

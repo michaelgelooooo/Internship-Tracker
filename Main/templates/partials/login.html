@@ -3,15 +3,15 @@
 
     {% if messages %}
         {% for message in messages %}
-        <div class="alert alert-{{ message.level_tag }} shadow-lg mb-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>{{ message }}</span>
+            <div class="alert alert-{{ message.level_tag }} shadow-lg mb-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-ghost btn-circle" onclick="this.closest('.alert').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <button type="button" class="btn btn-sm btn-ghost btn-circle" onclick="this.closest('.alert').remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
         {% endfor %}
     {% endif %}
 
@@ -28,7 +28,7 @@
             class="input input-bordered input-lg w-full rounded-lg focus:border-teal-500 focus:ring focus:ring-teal-100"
             placeholder="Enter password" required>
     </div>
-
+    
     <button type="submit"
         class="btn btn-lg w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-lg border-none mt-4">LOG-IN</button>
 </form>
