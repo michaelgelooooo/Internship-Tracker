@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Sum
 from django.contrib import messages
 from datetime import datetime, date
+from django.utils import timezone
 from calendar import monthrange
 from .models import Internship, DailyTimeRecord
 
@@ -31,28 +31,13 @@ def get_internship_stats(internship, month=None):
 
     # Total days logged overall
     total_days_logged = DailyTimeRecord.objects.filter(
-        internship=internship,
-        is_holiday=False,
-        is_weekend=False
+        internship=internship, is_holiday=False, is_weekend=False
     ).count()
 
     # Average hours per work day
-    total_avg = round(total_logged / total_days_logged, 1) if total_days_logged > 0 else 0
-
-    # -------------------
-    # Monthly stats
-    # -------------------
-    # monthly_records = DailyTimeRecord.objects.filter(
-    #     internship=internship,
-    #     date__month=month,
-    #     date__year=today.year,
-    #     is_holiday=False,
-    #     is_weekend=False
-    # )
-
-    # monthly_hours = monthly_records.aggregate(total=Sum("total_hours"))["total"] or 0
-    # monthly_days = monthly_records.count()
-    # monthly_avg = round(monthly_hours / monthly_days, 1) if monthly_days > 0 else 0
+    total_avg = (
+        round(total_logged / total_days_logged, 1) if total_days_logged > 0 else 0
+    )
 
     return {
         # Overall
@@ -63,10 +48,6 @@ def get_internship_stats(internship, month=None):
         "percent_remaining": percent_remaining,
         "total_days_logged": total_days_logged,
         "total_avg": total_avg,
-        # Monthly
-        # "monthly_hours": monthly_hours,
-        # "monthly_days": monthly_days,
-        # "monthly_avg": monthly_avg,
     }
 
 
@@ -221,6 +202,34 @@ def delete_daily_record(request):
     return redirect("index")
 
 
+from datetime import datetime
+
+
+@login_required
+def quick_log(request):
+    if request.method == "POST":
+        action = request.POST.get("log_action")
+        date_str = request.POST.get("log_date")
+        time_str = request.POST.get("log_time")
+
+        internship = Internship.objects.get(user=request.user)
+
+        # Convert date string to date object
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+
+        # Convert time string to time object
+        time_obj = datetime.strptime(time_str, "%H:%M").time()
+
+        record, created = DailyTimeRecord.objects.get_or_create(
+            internship=internship, date=date_obj
+        )
+
+        setattr(record, action, time_obj)
+        record.save()
+
+        return redirect("index")
+
+
 @login_required
 def index(request):
     internship = get_object_or_404(Internship, user=request.user)
@@ -273,6 +282,42 @@ def index(request):
             }
         )
 
+    # ------------------------------
+    # Determine next action for Quick Log
+    # ------------------------------
+    def get_next_action(internship):
+        today = timezone.localdate()
+
+        record = DailyTimeRecord.objects.filter(
+            internship=internship, date=today
+        ).first()
+
+        if not record or not record.am_in:
+            return "am_in"
+        if not record.am_out:
+            return "am_out"
+        if not record.pm_in:
+            return "pm_in"
+        if not record.pm_out:
+            return "pm_out"
+
+        return None
+
+    next_action = get_next_action(internship)
+
+    # Map to human-readable label with fallback
+    ACTION_LABELS = {
+        "am_in": "AM Time In",
+        "am_out": "AM Time Out",
+        "pm_in": "PM Time In",
+        "pm_out": "PM Time Out",
+    }
+
+    if next_action:
+        next_action_label = ACTION_LABELS.get(next_action, "")
+    else:
+        next_action_label = "No more actions for today"  # <-- display this if no more actions
+
     context = {
         "internship": internship,
         **stats,
@@ -280,6 +325,8 @@ def index(request):
         "current_month": current_month,
         "prev_month": prev_month,
         "next_month": next_month,
+        "next_action": next_action,
+        "next_action_label": next_action_label,  # <-- pass label to template
     }
 
     return render(request, "pages/index.html", context)
@@ -346,7 +393,11 @@ def register_view(request):
 
         # Create user
         user = User.objects.create_user(
-            username=username, email=email, password=password1, first_name=first_name, last_name=last_name
+            username=username,
+            email=email,
+            password=password1,
+            first_name=first_name,
+            last_name=last_name,
         )
 
         # Create internship record
@@ -362,7 +413,6 @@ def register_view(request):
         return redirect("index")
 
     return redirect("auth")
-
 
 
 @login_required
@@ -384,12 +434,12 @@ def update_user_info(request):
         # Validate unique username
         if User.objects.filter(username=username).exclude(pk=user.pk).exists():
             messages.error(request, "Username already exists.")
-            return redirect(request.META.get('HTTP_REFERER', '/'))
+            return redirect(request.META.get("HTTP_REFERER", "/"))
 
         # Validate unique email
         if User.objects.filter(email=email).exclude(pk=user.pk).exists():
             messages.error(request, "Email already registered.")
-            return redirect(request.META.get('HTTP_REFERER', '/'))
+            return redirect(request.META.get("HTTP_REFERER", "/"))
 
         # Update user fields
         user.username = username
@@ -406,7 +456,7 @@ def update_user_info(request):
         internship.save()
 
         messages.success(request, "User information updated successfully.")
-        return redirect(request.META.get('HTTP_REFERER', '/'))
+        return redirect(request.META.get("HTTP_REFERER", "/"))
 
     # Fallback
     return redirect("index")

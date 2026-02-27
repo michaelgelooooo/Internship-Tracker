@@ -4,16 +4,6 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-8">
-    <!-- HEADER -->
-    <!-- <div class="text-center space-y-2">
-        <h1 class="text-5xl font-extrabold text-teal-700">
-            Internship Hour Tracker
-        </h1>
-        <p class="text-gray-500 text-lg">
-            Track your internship progress
-        </p>
-    </div> -->
-    <!-- MAIN LAYOUT -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
         <!-- LEFT COLUMN: Calendar Card -->
@@ -27,31 +17,54 @@
 
         <!-- RIGHT COLUMN: Everything else -->
         <div class="col-span-1 lg:col-span-1 space-y-8">
+            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-6 space-y-4">
+
+                <!-- Header -->
+                <h2 class="card-title text-teal-700 text-xl">Quick Log</h2>
+
+                <form class="space-y-2" method="post" action="{% url 'quick-log' %}">
+                    {% csrf_token %}
+
+                    <!-- Row 1: Date & Time -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col">
+                            <label class="label font-semibold text-teal-800">Date</label>
+                            <input type="date" name="log_date"
+                                class="input input-bordered w-full rounded-lg"
+                                readonly>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label class="label font-semibold text-teal-800">Time</label>
+                            <input type="time" name="log_time"
+                                class="input input-bordered w-full rounded-lg"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Action -->
+                    <!-- Row 2: Action -->
+                    <div class="flex flex-col">
+                        <label class="label font-semibold text-teal-800">Action</label>
+                        <input type="text" name="log_action_display" value="{{ next_action_label }}"
+                            class="input input-bordered w-full rounded-lg pointer-events-none"
+                            readonly>
+                        <!-- Hidden field for form submission -->
+                        <input type="hidden" name="log_action" value="{{ next_action }}">
+                    </div>
+
+                    <!-- Row 3: Button -->
+                    <div class="pt-2">
+                        <button type="submit"
+                            class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg py-3">
+                            Log Now
+                        </button>
+                    </div>
+
+                </form>
+            </div>
             <!-- STATS -->
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl space-y-2">
-
-                <!-- ROW 1: Monthly Stats
-                <div class="stats mb-4">
-                    <div class="stat">
-                        <div class="stat-title font-bold text-gray-700">Hours This Month</div>
-                        <div class="stat-value text-teal-700">{{ monthly_hours|floatformat:1 }}</div>
-                        <div class="stat-desc font-semibold text-teal-600">Logged Hours</div>
-                    </div>
-
-                    <div class="stat">
-                        <div class="stat-title font-bold text-gray-700">Days This Month</div>
-                        <div class="stat-value text-teal-700">{{ monthly_days }}</div>
-                        <div class="stat-desc font-semibold text-teal-600">Logged Days</div>
-                    </div>
-
-                    <div class="stat">
-                        <div class="stat-title font-bold text-gray-700">Avg Hours/Day</div>
-                        <div class="stat-value text-teal-700">{{ monthly_avg|floatformat:1 }}</div>
-                        <div class="stat-desc font-semibold text-teal-600">Average</div>
-                    </div>
-                </div> -->
-
-                <!-- ROW 2: Overall Stats -->
                 <div class="stats">
                     <div class="stat">
                         <div class="stat-title font-bold text-gray-700">Hours</div>
@@ -124,32 +137,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    function openModal(row) {
-        const day = row.dataset.day;
-
-        // Update the time-edit form
-        document.getElementById('modal-day').value = day;
-        document.getElementById('modal-am-in').value = row.dataset.amIn || "";
-        document.getElementById('modal-am-out').value = row.dataset.amOut || "";
-        document.getElementById('modal-pm-in').value = row.dataset.pmIn || "";
-        document.getElementById('modal-pm-out').value = row.dataset.pmOut || "";
-
-        // Update the hidden day inputs for Holiday and Weekend buttons
-        document.getElementById('holiday-day').value = day;
-        document.getElementById('weekend-day').value = day;
-
-        document.getElementById('delete-day').value = day;
-
-        // Display the date under the header
-        const today = new Date(); // current month/year for context
-        const displayDate = new Date(today.getFullYear(), today.getMonth(), day);
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('modal-date').textContent = displayDate.toLocaleDateString(undefined, options);
-
-        // Open the modal
-        document.getElementById('log-modal').checked = true;
-    }
-</script>
 {% endblock content %}
