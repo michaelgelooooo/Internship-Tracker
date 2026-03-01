@@ -118,6 +118,8 @@ def build_months_rows(records_map, year):
             rows.append(
                 {
                     "day": day,
+                    "month_num": month_num,
+                    "year": year,
                     "am_in": record.am_in if record else None,
                     "am_out": record.am_out if record else None,
                     "pm_in": record.pm_in if record else None,
