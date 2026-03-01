@@ -1,7 +1,8 @@
 function openModal(row) {
-    const day = row.dataset.day;
-    const month = row.dataset.month;
-    const year = row.dataset.year;
+    // Grab day, month, year from the row
+    const day = row.dataset.day || 1;
+    const month = row.dataset.month || 1;
+    const year = row.dataset.year || new Date().getFullYear();
 
     // Populate time inputs
     const amIn = row.dataset.amIn || "";
@@ -12,20 +13,24 @@ function openModal(row) {
     document.getElementById('modal-day').value = day;
     document.getElementById('modal-month').value = month;
     document.getElementById('modal-year').value = year;
-    
+
     document.getElementById('modal-am-in').value = amIn;
     document.getElementById('modal-am-out').value = amOut;
     document.getElementById('modal-pm-in').value = pmIn;
     document.getElementById('modal-pm-out').value = pmOut;
 
-    // Hidden inputs for forms
-    document.getElementById('holiday-day').value = day;
-    document.getElementById('weekend-day').value = day;
-    document.getElementById('delete-day').value = day;
+    // Populate month/year for other forms that also use the day
+    ['holiday', 'weekend', 'delete'].forEach(prefix => {
+        const dayInput = document.getElementById(`${prefix}-day`);
+        const monthInput = document.getElementById(`${prefix}-month`);
+        const yearInput = document.getElementById(`${prefix}-year`);
+        if (dayInput) dayInput.value = day;
+        if (monthInput) monthInput.value = month;
+        if (yearInput) yearInput.value = year;
+    });
 
     // Display the date header
-    const today = new Date();
-    const displayDate = new Date(today.getFullYear(), today.getMonth(), day);
+    const displayDate = new Date(year, month - 1, day); // JS months are 0-indexed
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     document.getElementById('modal-date').textContent = displayDate.toLocaleDateString(undefined, options);
 
@@ -35,12 +40,10 @@ function openModal(row) {
 
     // Disable/enable time inputs and save button if it's a holiday/weekend
     const disableForm = isHoliday || isWeekend;
-    const timeInputs = ['modal-am-in', 'modal-am-out', 'modal-pm-in', 'modal-pm-out'];
-    timeInputs.forEach(id => {
+    ['modal-am-in', 'modal-am-out', 'modal-pm-in', 'modal-pm-out'].forEach(id => {
         const input = document.getElementById(id);
         if (input) input.disabled = disableForm;
     });
-
     const saveBtn = document.querySelector('button[form="daily-log-form"]');
     if (saveBtn) saveBtn.disabled = disableForm;
 

@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -186,49 +187,41 @@ def mark_day(request):
     if request.method == "POST":
         internship = get_object_or_404(Internship, user=request.user)
         day = int(request.POST.get("day"))
+        month = int(request.POST.get("month"))
+        year = int(request.POST.get("year"))
         mark_type = request.POST.get("mark")
 
-        # Build the date for this month/year
-        today = date.today()
-        record_date = today.replace(day=day)
+        record_date = date(year, month, day)
 
-        # Get or create the record
         record, created = DailyTimeRecord.objects.get_or_create(
             internship=internship, date=record_date
         )
 
-        # Toggle logic
         if mark_type == "holiday":
             if record.is_holiday:
-                # Already holiday → toggle off
                 record.is_holiday = False
             else:
-                # Not holiday → set holiday, clear weekend
                 record.is_holiday = True
                 record.is_weekend = False
-                # Clear time fields
                 record.am_in = None
                 record.am_out = None
                 record.pm_in = None
                 record.pm_out = None
         elif mark_type == "weekend":
             if record.is_weekend:
-                # Already weekend → toggle off
                 record.is_weekend = False
             else:
-                # Not weekend → set weekend, clear holiday
                 record.is_weekend = True
                 record.is_holiday = False
-                # Clear time fields
                 record.am_in = None
                 record.am_out = None
                 record.pm_in = None
                 record.pm_out = None
 
-        # Save changes
         record.save()
 
-    return redirect("index")
+    url = f"{reverse('index')}?month={month}"
+    return redirect(url)
 
 
 @login_required
@@ -252,33 +245,26 @@ def update_daily_record(request):
 
         record_date = date(year, month, day)
 
-        # Check if all fields are empty
         all_empty = all(f is None for f in [am_in, am_out, pm_in, pm_out])
 
-        # Try to fetch existing record
         record = DailyTimeRecord.objects.filter(
             internship=internship, date=record_date
         ).first()
 
         if all_empty and not record:
-            # Nothing entered and no record exists → do nothing
             return redirect("index")
 
         if not record:
-            # At least one field filled → create new record
             record = DailyTimeRecord.objects.create(
                 internship=internship, date=record_date
             )
 
-        # Update fields
         record.am_in = am_in
         record.am_out = am_out
         record.pm_in = pm_in
         record.pm_out = pm_out
-
         record.save()
 
-        # After saving, check if all fields are empty and not a weekend/holiday → delete
         if (
             all(
                 f in [None, ""]
@@ -289,33 +275,28 @@ def update_daily_record(request):
         ):
             record.delete()
 
-    return redirect("index")
+    url = f"{reverse('index')}?month={month}"
+    return redirect(url)
 
 
 @login_required
 def delete_daily_record(request):
-    """
-    Deletes a DailyTimeRecord for the given day of the current month.
-    """
     if request.method == "POST":
         internship = get_object_or_404(Internship, user=request.user)
-        day = request.POST.get("day")
+        day = int(request.POST.get("day"))
+        month = int(request.POST.get("month"))
+        year = int(request.POST.get("year"))
 
-        if not day:
-            return redirect("index")  # safety check
+        record_date = date(year, month, day)
 
-        day = int(day)
-        today = date.today()
-        record_date = today.replace(day=day)
-
-        # Fetch the record and delete if exists
         record = DailyTimeRecord.objects.filter(
             internship=internship, date=record_date
         ).first()
         if record:
             record.delete()
 
-    return redirect("index")
+    url = f"{reverse('index')}?month={month}"
+    return redirect(url)
 
 
 @login_required

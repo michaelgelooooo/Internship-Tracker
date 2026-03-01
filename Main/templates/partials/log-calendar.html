@@ -32,8 +32,8 @@
         </thead>
         <tbody>
             {% for row in month.rows %}
-            <tr class="hover:bg-orange-200 cursor-pointer" data-day="{{ row.day }}" data-month="{{ month.month_num }}"
-                data-year="{{ month.year }}" data-am-in="{{ row.am_in|time:'H:i'|default:'' }}"
+            <tr class="hover:bg-orange-200 cursor-pointer" data-day="{{ row.day }}" data-month="{{ row.month_num }}"
+                data-year="{{ row.year }}" data-am-in="{{ row.am_in|time:'H:i'|default:'' }}"
                 data-am-out="{{ row.am_out|time:'H:i'|default:'' }}" data-pm-in="{{ row.pm_in|time:'H:i'|default:'' }}"
                 data-pm-out="{{ row.pm_out|time:'H:i'|default:'' }}"
                 data-is-holiday="{{ row.is_holiday|yesno:'true,false' }}"
