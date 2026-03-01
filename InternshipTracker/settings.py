@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = "django-insecure-&fxkdk2g-rw$9y5u2&pjulb5w7n7hdeb6svb@b-2)vf7#62(l2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.1.7", "127.0.0.1"]
+ALLOWED_HOSTS = ["michaelgelooo.pythonanywhere.com"]
 
 
 # Application definition
@@ -115,6 +116,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
+# Directory where collectstatic will put all static files
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+# URL to access static files in the browser
 STATIC_URL = "/static/"
 
 
