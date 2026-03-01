@@ -1,5 +1,7 @@
 function openModal(row) {
     const day = row.dataset.day;
+    const month = row.dataset.month;
+    const year = row.dataset.year;
 
     // Populate time inputs
     const amIn = row.dataset.amIn || "";
@@ -8,6 +10,8 @@ function openModal(row) {
     const pmOut = row.dataset.pmOut || "";
 
     document.getElementById('modal-day').value = day;
+    document.getElementById('modal-month').value = month;
+    document.getElementById('modal-year').value = year;
     document.getElementById('modal-am-in').value = amIn;
     document.getElementById('modal-am-out').value = amOut;
     document.getElementById('modal-pm-in').value = pmIn;

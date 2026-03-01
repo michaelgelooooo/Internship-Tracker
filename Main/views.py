@@ -234,6 +234,8 @@ def update_daily_record(request):
     if request.method == "POST":
         internship = get_object_or_404(Internship, user=request.user)
         day = int(request.POST.get("day"))
+        month = int(request.POST.get("month"))
+        year = int(request.POST.get("year"))
 
         # Helper to convert string to time
         def str_to_time(s):
@@ -246,7 +248,7 @@ def update_daily_record(request):
         pm_in = str_to_time(request.POST.get("pm_in"))
         pm_out = str_to_time(request.POST.get("pm_out"))
 
-        record_date = date.today().replace(day=day)
+        record_date = date(year, month, day)
 
         # Check if all fields are empty
         all_empty = all(f is None for f in [am_in, am_out, pm_in, pm_out])

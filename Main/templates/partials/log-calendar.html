@@ -4,9 +4,9 @@
     </a>
     <div class="text-xl font-bold text-teal-700 text-center flex-1">
         {% for month in months_rows %}
-            {% if month.month_num == current_month %}
-                {{ month.month }} {{ month.year }}
-            {% endif %}
+        {% if month.month_num == current_month %}
+        {{ month.month }} {{ month.year }}
+        {% endif %}
         {% endfor %}
     </div>
     <a href="?month={{ next_month }}" class="btn-circle bg-orange-100 border-none hover:bg-orange-200">
@@ -32,31 +32,32 @@
         </thead>
         <tbody>
             {% for row in month.rows %}
-                <tr class="hover:bg-orange-200 cursor-pointer" data-day="{{ row.day }}"
-                    data-am-in="{{ row.am_in|time:'H:i'|default:'' }}" data-am-out="{{ row.am_out|time:'H:i'|default:'' }}"
-                    data-pm-in="{{ row.pm_in|time:'H:i'|default:'' }}" data-pm-out="{{ row.pm_out|time:'H:i'|default:'' }}"
-                    data-is-holiday="{{ row.is_holiday|yesno:'true,false' }}"
-                    data-is-weekend="{{ row.is_weekend|yesno:'true,false' }}" onclick="openModal(this)">
-                    <td class="font-semibold">{{ row.day }}</td>
+            <tr class="hover:bg-orange-200 cursor-pointer" data-day="{{ row.day }}" data-month="{{ month.month_num }}"
+                data-year="{{ month.year }}" data-am-in="{{ row.am_in|time:'H:i'|default:'' }}"
+                data-am-out="{{ row.am_out|time:'H:i'|default:'' }}" data-pm-in="{{ row.pm_in|time:'H:i'|default:'' }}"
+                data-pm-out="{{ row.pm_out|time:'H:i'|default:'' }}"
+                data-is-holiday="{{ row.is_holiday|yesno:'true,false' }}"
+                data-is-weekend="{{ row.is_weekend|yesno:'true,false' }}" onclick="openModal(this)">
+                <td class="font-semibold">{{ row.day }}</td>
 
-                    {% if row.is_holiday %}
-                        <td colspan="5" class="text-center font-bold">HOLIDAY</td>
-                    {% elif row.is_weekend %}
-                        <td colspan="5" class="text-center font-bold">WEEKEND</td>
+                {% if row.is_holiday %}
+                <td colspan="5" class="text-center font-bold">HOLIDAY</td>
+                {% elif row.is_weekend %}
+                <td colspan="5" class="text-center font-bold">WEEKEND</td>
+                {% else %}
+                <td>{{ row.am_in|time:"H:i"|default:"-" }}</td>
+                <td>{{ row.am_out|time:"H:i"|default:"-" }}</td>
+                <td>{{ row.pm_in|time:"H:i"|default:"-" }}</td>
+                <td>{{ row.pm_out|time:"H:i"|default:"-" }}</td>
+                <td class="font-semibold">
+                    {% if row.hours %}
+                    {{ row.hours|stringformat:"g" }}
                     {% else %}
-                        <td>{{ row.am_in|time:"H:i"|default:"-" }}</td>
-                        <td>{{ row.am_out|time:"H:i"|default:"-" }}</td>
-                        <td>{{ row.pm_in|time:"H:i"|default:"-" }}</td>
-                        <td>{{ row.pm_out|time:"H:i"|default:"-" }}</td>
-                        <td class="font-semibold">
-                            {% if row.hours %}
-                                {{ row.hours|stringformat:"g" }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
+                    -
                     {% endif %}
-                </tr>
+                </td>
+                {% endif %}
+            </tr>
             {% endfor %}
         </tbody>
     </table>
