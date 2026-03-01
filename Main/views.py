@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.contrib import messages
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.utils import timezone
 from calendar import monthrange
 from .models import Internship, DailyTimeRecord
@@ -27,17 +28,42 @@ def get_internship_stats(internship, month=None):
     percent_complete = (
         int((total_logged / total_required) * 100) if total_required else 0
     )
-    percent_remaining = 100 - percent_complete
 
-    # Total days logged overall
-    total_days_logged = DailyTimeRecord.objects.filter(
-        internship=internship, is_holiday=False, is_weekend=False
-    ).count()
+    total_days_logged = (
+        DailyTimeRecord.objects.filter(
+            internship=internship, is_holiday=False, is_weekend=False
+        )
+        .filter(
+            Q(am_in__isnull=False)
+            | Q(am_out__isnull=False)
+            | Q(pm_in__isnull=False)
+            | Q(pm_out__isnull=False)
+        )
+        .count()
+    )
 
-    # Average hours per work day
+    # Average hours per logged work day
     total_avg = (
         round(total_logged / total_days_logged, 1) if total_days_logged > 0 else 0
     )
+
+    def add_workdays(start_date, workdays):
+        current_date = start_date
+        days_added = 0
+        while days_added < workdays:
+            current_date += timedelta(days=1)
+            if current_date.weekday() < 5:  # 0=Monday, 6=Sunday
+                days_added += 1
+        return current_date
+
+    # Days left based on 8-hour workday
+    standard_hours_per_day = 8
+    if remaining_hours > 0:
+        days_left = int((remaining_hours / standard_hours_per_day) + 0.999)
+        projected_completion = add_workdays(today, days_left)
+    else:
+        days_left = 0
+        projected_completion = today
 
     return {
         # Overall
@@ -45,9 +71,10 @@ def get_internship_stats(internship, month=None):
         "total_required": total_required,
         "remaining_hours": remaining_hours,
         "percent_complete": percent_complete,
-        "percent_remaining": percent_remaining,
         "total_days_logged": total_days_logged,
         "total_avg": total_avg,
+        "days_left": days_left,
+        "projected_completion": projected_completion,
     }
 
 
@@ -125,7 +152,14 @@ def get_next_quick_log_action(internship):
     today = timezone.localdate()
     record = DailyTimeRecord.objects.filter(internship=internship, date=today).first()
 
-    if not record or not record.am_in:
+    if not record:
+        return "am_in"
+
+    if record.is_holiday or record.is_weekend:
+        return None
+
+    # Normal time progression
+    if not record.am_in:
         return "am_in"
     if not record.am_out:
         return "am_out"
@@ -133,6 +167,7 @@ def get_next_quick_log_action(internship):
         return "pm_in"
     if not record.pm_out:
         return "pm_out"
+
     return None
 
 
@@ -169,6 +204,11 @@ def mark_day(request):
                 # Not holiday → set holiday, clear weekend
                 record.is_holiday = True
                 record.is_weekend = False
+                # Clear time fields
+                record.am_in = None
+                record.am_out = None
+                record.pm_in = None
+                record.pm_out = None
         elif mark_type == "weekend":
             if record.is_weekend:
                 # Already weekend → toggle off
@@ -177,6 +217,11 @@ def mark_day(request):
                 # Not weekend → set weekend, clear holiday
                 record.is_weekend = True
                 record.is_holiday = False
+                # Clear time fields
+                record.am_in = None
+                record.am_out = None
+                record.pm_in = None
+                record.pm_out = None
 
         # Save changes
         record.save()
@@ -203,19 +248,42 @@ def update_daily_record(request):
 
         record_date = date.today().replace(day=day)
 
-        # ✅ Get or create the DTR
-        record, created = DailyTimeRecord.objects.get_or_create(
-            internship=internship, date=record_date
-        )
+        # Check if all fields are empty
+        all_empty = all(f is None for f in [am_in, am_out, pm_in, pm_out])
 
-        # ✅ Update fields manually
+        # Try to fetch existing record
+        record = DailyTimeRecord.objects.filter(
+            internship=internship, date=record_date
+        ).first()
+
+        if all_empty and not record:
+            # Nothing entered and no record exists → do nothing
+            return redirect("index")
+
+        if not record:
+            # At least one field filled → create new record
+            record = DailyTimeRecord.objects.create(
+                internship=internship, date=record_date
+            )
+
+        # Update fields
         record.am_in = am_in
         record.am_out = am_out
         record.pm_in = pm_in
         record.pm_out = pm_out
 
-        # ✅ Save triggers save() and post_save signals
         record.save()
+
+        # After saving, check if all fields are empty and not a weekend/holiday → delete
+        if (
+            all(
+                f in [None, ""]
+                for f in [record.am_in, record.am_out, record.pm_in, record.pm_out]
+            )
+            and not record.is_weekend
+            and not record.is_holiday
+        ):
+            record.delete()
 
     return redirect("index")
 
@@ -244,9 +312,6 @@ def delete_daily_record(request):
             record.delete()
 
     return redirect("index")
-
-
-from datetime import datetime
 
 
 @login_required

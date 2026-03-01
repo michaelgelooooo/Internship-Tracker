@@ -40,24 +40,29 @@ function openModal(row) {
     if (saveBtn) saveBtn.disabled = disableForm;
 
     // Update Holiday/Weekend buttons visually
-    const holidayBtn = document.querySelector('#holiday-day').closest('form').querySelector('button');
-    const weekendBtn = document.querySelector('#weekend-day').closest('form').querySelector('button');
+    const holidayBtn = document.getElementById('holiday-btn');
+    const weekendBtn = document.getElementById('weekend-btn');
 
     if (isHoliday) {
-        holidayBtn.classList.add('bg-orange-500', 'text-white', 'hover:bg-orange-700');
+        holidayBtn.classList.add('bg-orange-500', 'text-white');
         holidayBtn.textContent = "Unmark as Holiday";
+
         weekendBtn.classList.remove('bg-orange-500', 'text-white');
         weekendBtn.textContent = "Mark as Weekend";
+
     } else if (isWeekend) {
-        weekendBtn.classList.add('bg-orange-500', 'text-white', 'hover:bg-orange-700');
+        weekendBtn.classList.add('bg-orange-500', 'text-white');
         weekendBtn.textContent = "Unmark as Weekend";
+
         holidayBtn.classList.remove('bg-orange-500', 'text-white');
         holidayBtn.textContent = "Mark as Holiday";
+
     } else {
-        [holidayBtn, weekendBtn].forEach(btn => {
-            btn.classList.remove('bg-orange-500', 'text-white');
-            btn.textContent = btn.id === 'holiday-day' ? "Mark as Holiday" : "Mark as Weekend";
-        });
+        holidayBtn.classList.remove('bg-orange-500', 'text-white');
+        holidayBtn.textContent = "Mark as Holiday";
+
+        weekendBtn.classList.remove('bg-orange-500', 'text-white');
+        weekendBtn.textContent = "Mark as Weekend";
     }
 
     // Open the modal

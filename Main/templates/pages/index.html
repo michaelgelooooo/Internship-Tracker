@@ -4,22 +4,32 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-8">
+    <!-- Dashboard Header -->
+    <!-- Dashboard Header — Always Centered -->
+    <div class="text-center mb-6 sm:mb-8 space-y-1">
+        <h1 class="text-2xl sm:text-3xl font-bold text-teal-800 tracking-tight">
+            INTERNSHIP TRACKER
+        </h1>
+        <p class="text-gray-500 text-sm sm:text-base">
+            Track your hours. Reach your goals.
+        </p>
+    </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="col-span-1 lg:col-span-1">
+        <div class="col-span-1 order-2 lg:order-1">
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl w-full p-4 overflow-y-auto">
                 {% include "partials/log-calendar.html" %}
                 {% include "partials/log-modal.html" %}
             </div>
         </div>
 
-        <div class="col-span-1 lg:col-span-1 space-y-8">
-            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-6 space-y-4">
+        <div class="col-span-1 space-y-8 order-1 lg:order-2">
+            <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl p-4 space-y-4">
                 <h2 class="card-title text-teal-700 text-xl">Quick Log</h2>
 
                 <form class="space-y-2" method="post" action="{% url 'quick-log' %}">
                     {% csrf_token %}
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div class="flex flex-col">
                             <label class="label font-semibold text-teal-800">Date</label>
                             <input type="date" name="log_date" class="input input-bordered w-full rounded-lg" readonly>
@@ -38,8 +48,8 @@
                     </div>
 
                     <div class="pt-2">
-                        <button type="submit"
-                            class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg py-3">
+                        <button type="submit" {% if not next_action %}disabled{% endif %}
+                            class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg">
                             <i class="fas fa-business-time"></i> LOG NOW
                         </button>
                     </div>
@@ -47,7 +57,7 @@
             </div>
 
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl space-y-2">
-                <div class="stats">
+                <div class="stats w-full">
                     <div class="stat">
                         <div class="stat-title font-bold text-gray-700">Hours</div>
                         <div class="stat-value text-teal-700">{{ total_logged|stringformat:"g" }}</div>
@@ -66,11 +76,14 @@
                         <div class="stat-desc font-semibold text-teal-600">Per Day</div>
                     </div>
                 </div>
-                <div class="px-8 pb-4">
-                    <button type="submit"
-                    class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg py-3">
-                    <i class="fas fa-chart-line"></i> VIEW ALL STATS
-                </button></div>
+                <div class="px-4 pb-4">
+                    <button class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg"
+                        type="button" onclick="document.getElementById('all-stats-modal').showModal()">
+                        <i class="fas fa-chart-line"></i> VIEW ALL STATS
+                    </button>
+
+                    {% include 'partials/stats-modal.html' %}
+                </div>
             </div>
 
             <div class="card bg-orange-100 shadow-lg shadow-gray-400 rounded-2xl">
@@ -98,7 +111,7 @@
                         {{ internship.user.first_name }} {{ internship.user.last_name }}
                     </p>
                     <p><span class="font-semibold">Company:</span> {{ internship.company_name }}</p>
-                    <p><span class="font-semibold">Start Date:</span> {{ internship.start_date }}</p>
+                    <p><span class="font-semibold">Start Date:</span> {{ internship.start_date|date:"jS \o\f F, Y" }}</p>
                     <p>
                         <span class="font-semibold">Required Hours:</span>
                         {{ internship.total_hours_required|floatformat:0 }} Hours
@@ -106,7 +119,7 @@
                     <p><span class="font-semibold">Supervisor:</span> {{ internship.supervisor_name }}</p>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                         class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-lg border-none flex items-center justify-center gap-2"
                         onclick="document.getElementById('user-info-modal').showModal()">

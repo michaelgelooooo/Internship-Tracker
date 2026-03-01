@@ -1,0 +1,84 @@
+<!-- View All Stats Modal -->
+<dialog id="all-stats-modal" class="modal modal-center sm:modal-middle p-0">
+    <form method="dialog" class="modal-box max-w-xl p-6 space-y-4 bg-orange-100 rounded-2xl">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-teal-700 flex items-center gap-2">
+                <i class="fas fa-chart-bar"></i> Internship Stats
+            </h3>
+            <button class="btn btn-sm btn-circle btn-ghost text-gray-700" type="button"
+                onclick="document.getElementById('all-stats-modal').close()">
+                ✕
+            </button>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Total Hours Completed -->
+            <div class="stat bg-white p-3 rounded-xl shadow">
+                <div class="stat-title flex items-center gap-1 text-gray-700"><i class="fas fa-clock"></i> Hours
+                    Completed</div>
+                <div class="stat-value text-teal-700">{{ total_logged|stringformat:"g" }}</div>
+            </div>
+
+            <!-- Total Required Hours -->
+            <div class="stat bg-white p-3 rounded-xl shadow">
+                <div class="stat-title flex items-center gap-1 text-gray-700"><i class="fas fa-hourglass-half"></i>
+                    Total Required</div>
+                <div class="stat-value text-teal-700">{{ total_required|stringformat:"g" }}</div>
+            </div>
+
+            <!-- Remaining Hours -->
+            <div class="stat bg-white p-3 rounded-xl shadow">
+                <div class="stat-title flex items-center gap-1 text-gray-700"><i class="fas fa-hourglass-end"></i>
+                    Remaining</div>
+                <div class="stat-value text-teal-700">{{ remaining_hours|stringformat:"g" }}</div>
+            </div>
+
+            <!-- Percent Complete -->
+            <div class="stat bg-white p-3 rounded-xl shadow">
+                <div class="stat-title flex items-center gap-1 text-gray-700"><i class="fas fa-percent"></i> Percent
+                    Complete</div>
+                <div class="stat-value text-teal-700">{{ percent_complete }}%</div>
+            </div>
+
+            <!-- Average Hours per Day -->
+            <div class="stat bg-white p-3 rounded-xl shadow">
+                <div class="stat-title flex items-center gap-1 text-gray-700"><i class="fas fa-chart-line"></i> Avg
+                    Hours / Day</div>
+                <div class="stat-value text-teal-700">{{ total_avg|stringformat:"g" }}</div>
+            </div>
+
+            <!-- Total Days Logged -->
+            <div class="stat bg-white p-3 rounded-xl shadow">
+                <div class="stat-title flex items-center gap-1 text-gray-700"><i class="fas fa-calendar-day"></i> Days
+                    Logged</div>
+                <div class="stat-value text-teal-700">{{ total_days_logged }}</div>
+            </div>
+
+            <!-- Days Left -->
+            <div class="stat bg-white p-3 rounded-xl shadow">
+                <div class="stat-title flex items-center gap-1 text-gray-700"><i class="fas fa-hourglass"></i> Days Left
+                </div>
+                <div class="stat-value text-teal-700">{{ days_left }}</div>
+            </div>
+
+            <!-- Projected Completion -->
+            <div class="stat bg-white p-3 rounded-xl shadow">
+                <div class="stat-title flex items-center gap-1 text-gray-700"><i class="fas fa-calendar-check"></i>
+                    Projected Completion</div>
+                <div class="stat-value text-xl text-teal-700">
+                    {{ projected_completion|date:"jS \o\f F, Y" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Close Button -->
+        <div class="modal-action mt-4">
+            <button type="button" class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg"
+                onclick="document.getElementById('all-stats-modal').close()">
+                Close
+            </button>
+        </div>
+    </form>
+</dialog>

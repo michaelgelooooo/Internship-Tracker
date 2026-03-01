@@ -26,6 +26,8 @@ class DailyTimeRecordAdmin(admin.ModelAdmin):
         "pm_in",
         "pm_out",
         "total_hours",
+        "is_weekend",
+        "is_holiday"
     )
     search_fields = ("internship__user__username", "internship__company_name")
     list_filter = ("date",)

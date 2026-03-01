@@ -3,22 +3,24 @@
 {% load static %}
 
 {% block content %}
-<div class="flex items-center justify-center w-full">
+<div class="flex justify-center w-full min-h-screen px-4 sm:px-6">
     <div class="w-full max-w-xl">
-        <div class="tabs tabs-box tabs-xl justify-center bg-orange-100 p-8 shadow-lg">
+        <div class="tabs tabs-box tabs-lg sm:tabs-xl w-full justify-center bg-orange-100 p-4 sm:p-8 shadow-lg rounded-xl">
+
             <input type="radio" name="auth_tabs"
-                class="tab [--tab-bg:#FFF7ED] font-bold text-teal-800 text-center flex-1 mb-4" id="login-tab"
+                class="tab [--tab-bg:#FFF7ED] font-bold text-teal-800 text-center flex-1" id="login-tab"
                 aria-label="LOG-IN" checked />
-            <div class="tab-content">
+            <div class="tab-content pt-4">
                 {% include 'partials/login.html' %}
             </div>
-            
+
             <input type="radio" name="auth_tabs"
-                class="tab [--tab-bg:#FFF7ED] font-bold text-teal-800 text-center flex-1 mb-4" id="register-tab"
+                class="tab [--tab-bg:#FFF7ED] font-bold text-teal-800 text-center flex-1" id="register-tab"
                 aria-label="REGISTER" />
-            <div class="tab-content">
+            <div class="tab-content pt-4">
                 {% include 'partials/register.html' %}
             </div>
+
         </div>
     </div>
 </div>
