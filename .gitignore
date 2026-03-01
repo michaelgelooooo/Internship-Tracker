@@ -1,12 +1,13 @@
 # Python & Django
 *.pyc
 __pycache__/
-db.sqlite3
+internship-tracker-db.sqlite3
 /media
 /staticfiles
 
 # Environment
-.env/
+.venv/
+.env
 
 # Node / Tailwind
 node_modules/
