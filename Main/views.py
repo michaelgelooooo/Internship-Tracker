@@ -384,7 +384,7 @@ def login_view(request):
         else:
             # Tag this error as login-specific
             messages.error(request, "Invalid username or password.")
-            return redirect("/auth/?tab=login")
+            return redirect("auth")
 
     return redirect("auth")
 
@@ -408,15 +408,15 @@ def register_view(request):
         # Validation
         if password1 != password2:
             messages.error(request, "Passwords do not match.")
-            return redirect("/auth/?tab=register")
+            return redirect("auth")
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists.")
-            return redirect("/auth/?tab=register")
+            return redirect("auth")
 
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already registered.")
-            return redirect("/auth/?tab=register")
+            return redirect("auth")
 
         # Create user
         user = User.objects.create_user(

@@ -1,6 +1,6 @@
 <!-- View All Stats Modal -->
 <dialog id="all-stats-modal" class="modal modal-center sm:modal-middle p-0">
-    <form method="dialog" class="modal-box max-w-xl p-6 space-y-4 bg-orange-100 rounded-2xl">
+    <form method="dialog" class="modal-box max-w-xl p-4 space-y-4 bg-orange-100 rounded-2xl">
         <!-- Header -->
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-bold text-teal-700 flex items-center gap-2">
@@ -13,7 +13,7 @@
         </div>
 
         <!-- Stats Grid -->
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-2">
             <!-- Total Hours Completed -->
             <div class="stat bg-white p-3 rounded-xl shadow">
                 <div class="stat-title flex items-center gap-1 text-gray-700"><i class="fas fa-clock"></i> Hours
@@ -65,9 +65,10 @@
 
             <!-- Projected Completion -->
             <div class="stat bg-white p-3 rounded-xl shadow">
-                <div class="stat-title flex items-center gap-1 text-gray-700"><i class="fas fa-calendar-check"></i>
-                    Projected Completion</div>
-                <div class="stat-value text-xl text-teal-700">
+                <div class="stat-title flex items-center gap-1 text-gray-700">
+                    <i class="fas fa-calendar-check"></i> Target End Date
+                </div>
+                <div class="stat-value text-base sm:text-lg text-teal-700">
                     {{ projected_completion|date:"jS \o\f F, Y" }}
                 </div>
             </div>

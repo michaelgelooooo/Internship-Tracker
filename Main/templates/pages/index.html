@@ -4,12 +4,12 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto space-y-8">
-    <!-- Dashboard Header -->
-    <!-- Dashboard Header — Always Centered -->
     <div class="text-center mb-6 sm:mb-8 space-y-1">
-        <h1 class="text-2xl sm:text-3xl font-bold text-teal-800 tracking-tight">
+        <a href="{% url 'index' %}"
+            class="text-4xl font-bold text-teal-700 tracking-tight hover:text-teal-500 inline-block"
+            style="font-family: 'Bungee Shade', sans-serif;">
             INTERNSHIP TRACKER
-        </h1>
+        </a>
         <p class="text-gray-500 text-sm sm:text-base">
             Track your hours. Reach your goals.
         </p>
@@ -111,7 +111,8 @@
                         {{ internship.user.first_name }} {{ internship.user.last_name }}
                     </p>
                     <p><span class="font-semibold">Company:</span> {{ internship.company_name }}</p>
-                    <p><span class="font-semibold">Start Date:</span> {{ internship.start_date|date:"jS \o\f F, Y" }}</p>
+                    <p><span class="font-semibold">Start Date:</span> {{ internship.start_date|date:"jS \o\f F, Y" }}
+                    </p>
                     <p>
                         <span class="font-semibold">Required Hours:</span>
                         {{ internship.total_hours_required|floatformat:0 }} Hours
