@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.contrib import messages
 from datetime import datetime, date, timedelta
 from django.utils import timezone
+from zoneinfo import ZoneInfo
 from calendar import monthrange
 from .models import Internship, DailyTimeRecord
 
@@ -45,7 +46,7 @@ def get_internship_stats(internship, month=None):
 
     # Average hours per logged work day
     total_avg = (
-        round(total_logged / total_days_logged, 1) if total_days_logged > 0 else 0
+        round(total_logged / total_days_logged, 2) if total_days_logged > 0 else 0
     )
 
     def add_workdays(start_date, workdays):
@@ -299,20 +300,20 @@ def delete_daily_record(request):
     return redirect(url)
 
 
+from django.utils import timezone
+
+
 @login_required
 def quick_log(request):
     if request.method == "POST":
         action = request.POST.get("log_action")
-        date_str = request.POST.get("log_date")
-        time_str = request.POST.get("log_time")
 
         internship = Internship.objects.get(user=request.user)
 
-        # Convert date string to date object
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-
-        # Convert time string to time object
-        time_obj = datetime.strptime(time_str, "%H:%M").time()
+        # Get current LOCAL Manila time
+        now = timezone.localtime()
+        date_obj = now.date()
+        time_obj = now.time()
 
         record, created = DailyTimeRecord.objects.get_or_create(
             internship=internship, date=date_obj
@@ -345,6 +346,9 @@ def index(request):
     next_action = get_next_quick_log_action(internship)
     next_action_label = ACTION_LABELS.get(next_action, "No more actions for today")
 
+    now_manila = datetime.now(ZoneInfo("Asia/Manila"))
+    date_obj = now_manila.date()
+
     context = {
         "internship": internship,
         **stats,
@@ -354,6 +358,7 @@ def index(request):
         "next_month": next_month,
         "next_action": next_action,
         "next_action_label": next_action_label,
+        "today_log": date_obj,
     }
 
     return render(request, "pages/index.html", context)
