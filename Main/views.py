@@ -44,10 +44,25 @@ def get_internship_stats(internship, month=None):
         .count()
     )
 
-    # Average hours per logged work day
-    total_avg = (
-        round(total_logged / total_days_logged, 2) if total_days_logged > 0 else 0
-    )
+    today_record = DailyTimeRecord.objects.filter(
+        internship=internship, date=today
+    ).first()
+
+    # Calculate a “diff” to subtract 1 if today is incomplete
+    diff = 0
+    if today_record:
+        incomplete_today = (
+            not today_record.am_in
+            or not today_record.am_out
+            or not today_record.pm_in
+            or not today_record.pm_out
+        )
+        if incomplete_today:
+            diff = 1
+
+    # Adjust total_days_logged for average calculation
+    denominator = max(total_days_logged - diff, 1)  # avoid division by zero
+    total_avg = round(total_logged / denominator, 2)
 
     def add_workdays(start_date, workdays):
         current_date = start_date
@@ -298,9 +313,6 @@ def delete_daily_record(request):
 
     url = f"{reverse('index')}?month={month}"
     return redirect(url)
-
-
-from django.utils import timezone
 
 
 @login_required
