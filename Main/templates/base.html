@@ -20,6 +20,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Bungee+Shade&family=Lexend:wght@100..900&display=swap"
         rel="stylesheet">
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.5.6/dialog-polyfill.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.5.6/dialog-polyfill.min.css">
+
     <style>
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
@@ -48,7 +51,7 @@
         </div>
         {% endfor %}
         {% endif %}
-        
+
         {% block content %}
         {% endblock %}
     </main>

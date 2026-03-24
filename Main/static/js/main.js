@@ -71,6 +71,11 @@ function closeModal() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('dialog').forEach(dialog => {
+        if (typeof dialogPolyfill !== 'undefined') {
+            dialogPolyfill.registerDialog(dialog);
+        }
+    });
     // --- Quick Log date/time updater ---
     const dateInput = document.querySelector('input[name="log_date"]');
     const timeInput = document.querySelector('input[name="log_time"]');
