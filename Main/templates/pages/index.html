@@ -42,7 +42,7 @@
                     </div>
                     <div class="pt-2">
                         <button type="submit" {% if not next_action %}disabled{% endif %}
-                            class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg">
+                            class="btn w-full bg-teal-600 hover:bg-teal-700 text-white border-none font-semibold rounded-lg">
                             <i class="fas fa-business-time"></i> LOG NOW
                         </button>
                     </div>
@@ -101,7 +101,7 @@
                     </div>
                 </div>
                 <div class="px-4 pb-4">
-                    <button class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg"
+                    <button class="btn w-full bg-teal-600 hover:bg-teal-700 text-white border-none font-semibold rounded-lg"
                         type="button" onclick="document.getElementById('all-stats-modal').showModal()">
                         <i class="fas fa-chart-line"></i> VIEW ALL STATS
                     </button>
@@ -114,7 +114,7 @@
                 <div class="card-body p-4">
                     <div class="flex justify-between items-center">
                         <h2 class="card-title text-teal-700 text-xl">Overall Progress</h2>
-                        <span class="badge bg-orange-600 text-white border-none">{{ percent_complete }}%</span>
+                        <span class="badge bg-orange-600 text-white border-none">{{ percent_complete|floatformat:0 }}%</span>
                     </div>
 
                     <progress class="progress text-teal-600 h-2 mt-2" value="{{ total_logged }}"

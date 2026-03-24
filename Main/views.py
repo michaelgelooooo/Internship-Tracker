@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.contrib import messages
 from datetime import datetime, date, timedelta
 from django.utils import timezone
@@ -11,17 +11,17 @@ from calendar import monthrange
 from .models import Internship, DailyTimeRecord
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
+import math
 
 
 def get_internship_stats(internship):
     today = date.today()
 
+    # --- Overall ---
     total_logged = internship.total_hours_logged
     total_required = internship.total_hours_required
     remaining_hours = max(total_required - total_logged, 0)
-    percent_complete = (
-        int((total_logged / total_required) * 100) if total_required else 0
-    )
+    percent_complete = (total_logged / total_required) * 100 if total_required else 0
 
     total_days_logged = (
         DailyTimeRecord.objects.filter(
@@ -34,8 +34,6 @@ def get_internship_stats(internship):
         .count()
     )
 
-    total_avg = round(total_logged / max(total_days_logged, 1), 2)
-
     def add_workdays(start_date, workdays):
         current_date = start_date
         days_added = 0
@@ -45,7 +43,9 @@ def get_internship_stats(internship):
                 days_added += 1
         return current_date
 
+    standard_hours_per_week = 40
     standard_hours_per_day = 10
+
     if remaining_hours > 0:
         days_left = int((remaining_hours / standard_hours_per_day) + 0.999)
         projected_completion = add_workdays(today, days_left)
@@ -53,15 +53,98 @@ def get_internship_stats(internship):
         days_left = 0
         projected_completion = today
 
+    # --- Pace ---
+    total_avg = round(total_logged / max(total_days_logged, 1), 2)
+    weeks_left = math.ceil(days_left / 4) if days_left > 0 else 0
+
+    start_date = internship.start_date
+    weeks_elapsed = (today - start_date).days // 7
+    expected_hours_by_now = round(weeks_elapsed * standard_hours_per_week, 2)
+    hours_ahead_behind = round(total_logged - expected_hours_by_now, 2)
+
+    if hours_ahead_behind > 0:
+        pace_status = "Ahead"
+    elif hours_ahead_behind < 0:
+        pace_status = "Behind"
+    else:
+        pace_status = "On Track"
+
+    required_avg_going_forward = (
+        round(remaining_hours / weeks_left, 2) if weeks_left > 0 else 0
+    )
+
+    # --- Monthly ---
+    monthly_records = DailyTimeRecord.objects.filter(
+        internship=internship,
+        date__year=today.year,
+        date__month=today.month,
+        is_holiday=False,
+        is_weekend=False,
+    )
+
+    hours_this_month = monthly_records.aggregate(total=Sum("total_hours"))["total"] or 0
+
+    days_attended_this_month = monthly_records.filter(
+        Q(am_in__isnull=False, am_out__isnull=False)
+        | Q(pm_in__isnull=False, pm_out__isnull=False)
+    ).count()
+
+    monthly_avg = round(hours_this_month / max(days_attended_this_month, 1), 2)
+
+    _, last_day = monthrange(today.year, today.month)
+
+    workdays_remaining_in_month = sum(
+        1
+        for d in range(today.day + 1, last_day + 1)
+        if date(today.year, today.month, d).weekday() < 4
+    )
+
+    workdays_elapsed_this_month = sum(
+        1
+        for d in range(1, today.day + 1)
+        if date(today.year, today.month, d).weekday() < 4
+    )
+
+    days_missed_this_month = max(
+        workdays_elapsed_this_month - days_attended_this_month, 0
+    )
+
+    projected_hours_end_of_month = round(
+        hours_this_month + (monthly_avg * workdays_remaining_in_month), 2
+    )
+
+    # Weeks elapsed this month for pace calculation
+    weeks_elapsed_this_month = workdays_elapsed_this_month / 4
+    expected_hours_this_month = round(
+        weeks_elapsed_this_month * standard_hours_per_week, 2
+    )
+    hours_needed_this_month = round(
+        max(expected_hours_this_month - hours_this_month, 0), 2
+    )
+
     return {
+        # Overall
         "total_logged": total_logged,
         "total_required": total_required,
         "remaining_hours": remaining_hours,
         "percent_complete": percent_complete,
         "total_days_logged": total_days_logged,
+        "projected_completion": projected_completion,
+        # Pace
         "total_avg": total_avg,
         "days_left": days_left,
-        "projected_completion": projected_completion,
+        "weeks_left": weeks_left,
+        "expected_hours_by_now": expected_hours_by_now,
+        "hours_ahead_behind": hours_ahead_behind,
+        "pace_status": pace_status,
+        "required_avg_going_forward": required_avg_going_forward,
+        # Monthly
+        "hours_this_month": hours_this_month,
+        "days_attended_this_month": days_attended_this_month,
+        "days_missed_this_month": days_missed_this_month,
+        "monthly_avg": monthly_avg,
+        "hours_needed_this_month": hours_needed_this_month,
+        "projected_hours_end_of_month": projected_hours_end_of_month,
     }
 
 
