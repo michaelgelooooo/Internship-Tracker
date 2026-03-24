@@ -2,6 +2,22 @@ from django.contrib import admin
 from .models import Internship, DailyTimeRecord
 
 
+class DailyTimeRecordInline(admin.TabularInline):  # or StackedInline
+    model = DailyTimeRecord
+    extra = 0  # how many empty forms to show
+    fields = (
+        "date",
+        "am_in",
+        "am_out",
+        "pm_in",
+        "pm_out",
+        "total_hours",
+        "is_weekend",
+        "is_holiday",
+    )
+    readonly_fields = ("total_hours",)
+
+
 @admin.register(Internship)
 class InternshipAdmin(admin.ModelAdmin):
     list_display = (
@@ -15,19 +31,4 @@ class InternshipAdmin(admin.ModelAdmin):
     search_fields = ("user__username", "company_name", "supervisor_name")
     list_filter = ("start_date",)
 
-
-@admin.register(DailyTimeRecord)
-class DailyTimeRecordAdmin(admin.ModelAdmin):
-    list_display = (
-        "internship",
-        "date",
-        "am_in",
-        "am_out",
-        "pm_in",
-        "pm_out",
-        "total_hours",
-        "is_weekend",
-        "is_holiday"
-    )
-    search_fields = ("internship__user__username", "internship__company_name")
-    list_filter = ("date",)
+    inlines = [DailyTimeRecordInline]  # 👈 THIS is the key part
