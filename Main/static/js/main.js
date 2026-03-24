@@ -70,27 +70,43 @@ function closeModal() {
     }
 }
 
+function getOrdinal(n) {
+    if (n >= 11 && n <= 13) return n + 'th';
+    switch (n % 10) {
+        case 1: return n + 'st';
+        case 2: return n + 'nd';
+        case 3: return n + 'rd';
+        default: return n + 'th';
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('dialog').forEach(dialog => {
         if (typeof dialogPolyfill !== 'undefined') {
             dialogPolyfill.registerDialog(dialog);
         }
     });
-    // --- Quick Log date/time updater ---
+
     const dateInput = document.querySelector('input[name="log_date"]');
     const timeInput = document.querySelector('input[name="log_time"]');
 
     function updateDateTime() {
         const now = new Date();
 
+        const weekday = now.toLocaleDateString(undefined, { weekday: 'long' });
+        const day = getOrdinal(now.getDate());
+        const month = now.toLocaleDateString(undefined, { month: 'long' });
         const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const date = `${year}-${month}-${day}`;
-        const time = now.toTimeString().slice(0, 5);
+        const formattedDate = `${weekday}, ${day} of ${month} ${year}`;
 
-        if (dateInput) dateInput.value = date;
-        if (timeInput) timeInput.value = time;
+        const hours24 = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const hours12 = now.getHours() % 12 || 12;
+        const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+        const formattedTime = `${hours24}:${minutes} ⟵ or ⟶ ${String(hours12).padStart(2, '0')}:${minutes} ${ampm}`;
+
+        if (dateInput) dateInput.value = formattedDate;
+        if (timeInput) timeInput.value = formattedTime;
     }
 
     updateDateTime();

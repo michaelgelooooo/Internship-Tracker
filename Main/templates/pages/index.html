@@ -24,15 +24,13 @@
 
                 <form class="space-y-2" method="post" action="{% url 'quick-log' %}">
                     {% csrf_token %}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div class="flex flex-col">
-                            <label class="label font-semibold text-teal-800">Date</label>
-                            <input type="text" name="log_date" class="input input-bordered w-full rounded-lg" readonly>
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="label font-semibold text-teal-800">Time</label>
-                            <input type="time" name="log_time" class="input input-bordered w-full rounded-lg" readonly>
-                        </div>
+                    <div class="flex flex-col">
+                        <label class="label font-semibold text-teal-800">Date</label>
+                        <input type="text" name="log_date" class="input input-bordered w-full rounded-lg" readonly>
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="label font-semibold text-teal-800">Time</label>
+                        <input type="text" name="log_time" class="input input-bordered w-full rounded-lg" readonly>
                     </div>
                     <div class="flex flex-col">
                         <label class="label font-semibold text-teal-800">Action</label>
@@ -101,7 +99,8 @@
                     </div>
                 </div>
                 <div class="px-4 pb-4">
-                    <button class="btn w-full bg-teal-600 hover:bg-teal-700 text-white border-none font-semibold rounded-lg"
+                    <button
+                        class="btn w-full bg-teal-600 hover:bg-teal-700 text-white border-none font-semibold rounded-lg"
                         type="button" onclick="document.getElementById('all-stats-modal').showModal()">
                         <i class="fas fa-chart-line"></i> VIEW ALL STATS
                     </button>
@@ -114,7 +113,8 @@
                 <div class="card-body p-4">
                     <div class="flex justify-between items-center">
                         <h2 class="card-title text-teal-700 text-xl">Overall Progress</h2>
-                        <span class="badge bg-orange-600 text-white border-none">{{ percent_complete|floatformat:0 }}%</span>
+                        <span class="badge bg-orange-600 text-white border-none">{{ percent_complete|floatformat:0
+                            }}%</span>
                     </div>
 
                     <progress class="progress text-teal-600 h-2 mt-2" value="{{ total_logged }}"

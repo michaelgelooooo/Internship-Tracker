@@ -16,39 +16,48 @@
         <div class="tabs tabs-box w-full justify-center bg-orange-100 shadow-none rounded-xl">
 
             <!-- Tab 1: Overall -->
-            <input type="radio" name="stats_tabs" class="tab font-bold text-teal-800 flex-1" aria-label="Overall"
-                checked />
+            <input type="radio" name="stats_tabs" class="tab font-bold text-teal-800 flex-1" aria-label="Overall" checked />
             <div class="tab-content pt-4">
                 <div class="grid grid-cols-2 gap-2">
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-clock"></i> Hours Completed
+                            <i class="fas fa-clock"></i> Hours Logged
                         </div>
-                        <div class="stat-value text-teal-700">{{ total_logged|stringformat:"g" }}</div>
+                        <div class="stat-value text-teal-700">
+                            {{ total_logged|stringformat:"g" }} <span class="text-sm font-normal">hrs</span>
+                        </div>
                     </div>
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-hourglass-half"></i> Total Required
+                            <i class="fas fa-hourglass-half"></i> Hours Required
                         </div>
-                        <div class="stat-value text-teal-700">{{ total_required|stringformat:"g" }}</div>
+                        <div class="stat-value text-teal-700">
+                            {{ total_required|stringformat:"g" }} <span class="text-sm font-normal">hrs</span>
+                        </div>
                     </div>
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-hourglass-end"></i> Remaining
+                            <i class="fas fa-hourglass-end"></i> Hours Remaining
                         </div>
-                        <div class="stat-value text-teal-700">{{ remaining_hours|stringformat:"g" }}</div>
+                        <div class="stat-value text-teal-700">
+                            {{ remaining_hours|stringformat:"g" }} <span class="text-sm font-normal">hrs</span>
+                        </div>
                     </div>
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-percent"></i> Percent Complete
+                            <i class="fas fa-percent"></i> Percent Completed
                         </div>
-                        <div class="stat-value text-teal-700">{{ percent_complete|floatformat:1 }}%</div>
+                        <div class="stat-value text-teal-700">
+                            {{ percent_complete|floatformat:1 }}%
+                        </div>
                     </div>
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
                             <i class="fas fa-calendar-day"></i> Days Logged
                         </div>
-                        <div class="stat-value text-teal-700">{{ total_days_logged }}</div>
+                        <div class="stat-value text-teal-700">
+                            {{ total_days_logged }} <span class="text-sm font-normal">days</span>
+                        </div>
                     </div>
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
@@ -67,42 +76,50 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-chart-line"></i> Avg Hours / Day
+                            <i class="fas fa-chart-line"></i> Daily Average
                         </div>
-                        <div class="stat-value text-teal-700">{{ total_avg|stringformat:"g" }}</div>
-                    </div>
-                    <div class="stat bg-white p-3 rounded-xl shadow">
-                        <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-hourglass"></i> Days Left
-                        </div>
-                        <div class="stat-value text-teal-700">{{ days_left }}</div>
-                    </div>
-                    <div class="stat bg-white p-3 rounded-xl shadow">
-                        <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-calendar-week"></i> Weeks Left
-                        </div>
-                        <div class="stat-value text-teal-700">{{ weeks_left }}</div>
-                    </div>
-                    <div class="stat bg-white p-3 rounded-xl shadow">
-                        <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-bullseye"></i> Expected By Now
-                        </div>
-                        <div class="stat-value text-teal-700">{{ expected_hours_by_now|stringformat:"g" }} hrs</div>
-                    </div>
-                    <div class="stat bg-white p-3 rounded-xl shadow">
-                        <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-balance-scale"></i> Ahead / Behind
-                        </div>
-                        <div
-                            class="stat-value {% if hours_ahead_behind >= 0 %}text-teal-700{% else %}text-red-500{% endif %}">
-                            {% if hours_ahead_behind >= 0 %}+{% endif %}{{ hours_ahead_behind|stringformat:"g" }} hrs
+                        <div class="stat-value text-teal-700">
+                            {{ total_avg|stringformat:"g" }} <span class="text-sm font-normal">hrs</span>
                         </div>
                     </div>
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-running"></i> Needed / Week
+                            <i class="fas fa-hourglass"></i> Days Remaining
                         </div>
-                        <div class="stat-value text-teal-700">{{ required_avg_going_forward|stringformat:"g" }} hrs
+                        <div class="stat-value text-teal-700">
+                            {{ days_left }} <span class="text-sm font-normal">days</span>
+                        </div>
+                    </div>
+                    <div class="stat bg-white p-3 rounded-xl shadow">
+                        <div class="stat-title flex items-center gap-1 text-gray-700">
+                            <i class="fas fa-calendar-week"></i> Weeks Remaining
+                        </div>
+                        <div class="stat-value text-teal-700">
+                            {{ weeks_left }} <span class="text-sm font-normal">weeks</span>
+                        </div>
+                    </div>
+                    <div class="stat bg-white p-3 rounded-xl shadow">
+                        <div class="stat-title flex items-center gap-1 text-gray-700">
+                            <i class="fas fa-bullseye"></i> Expected Hours By Now
+                        </div>
+                        <div class="stat-value text-teal-700">
+                            {{ expected_hours_by_now|stringformat:"g" }} <span class="text-sm font-normal">hrs</span>
+                        </div>
+                    </div>
+                    <div class="stat bg-white p-3 rounded-xl shadow">
+                        <div class="stat-title flex items-center gap-1 text-gray-700">
+                            <i class="fas fa-balance-scale"></i> Hours Ahead / Behind
+                        </div>
+                        <div class="stat-value {% if hours_ahead_behind >= 0 %}text-teal-700{% else %}text-red-500{% endif %}">
+                            {% if hours_ahead_behind >= 0 %}+{% endif %}{{ hours_ahead_behind|stringformat:"g" }} <span class="text-sm font-normal">hrs</span>
+                        </div>
+                    </div>
+                    <div class="stat bg-white p-3 rounded-xl shadow">
+                        <div class="stat-title flex items-center gap-1 text-gray-700">
+                            <i class="fas fa-running"></i> Required Per Week
+                        </div>
+                        <div class="stat-value text-teal-700">
+                            {{ required_avg_going_forward|stringformat:"g" }} <span class="text-sm font-normal">hrs</span>
                         </div>
                     </div>
                 </div>
@@ -114,42 +131,51 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-calendar-alt"></i> Hours This Month
+                            <i class="fas fa-clock"></i> Hours Logged
                         </div>
-                        <div class="stat-value text-teal-700">{{ hours_this_month|stringformat:"g" }}</div>
-                    </div>
-                    <div class="stat bg-white p-3 rounded-xl shadow">
-                        <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-calendar-check"></i> Days Attended
-                        </div>
-                        <div class="stat-value text-teal-700">{{ days_attended_this_month }}</div>
-                    </div>
-                    <div class="stat bg-white p-3 rounded-xl shadow">
-                        <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-calendar-times"></i> Days Missed
-                        </div>
-                        <div
-                            class="stat-value {% if days_missed_this_month > 0 %}text-red-500{% else %}text-teal-700{% endif %}">
-                            {{ days_missed_this_month }}
+                        <div class="stat-value text-teal-700">
+                            {{ hours_this_month|stringformat:"g" }} <span class="text-sm font-normal">hrs</span>
                         </div>
                     </div>
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-chart-line"></i> Avg Hours / Day
+                            <i class="fas fa-hourglass-half"></i> Hours Required
                         </div>
-                        <div class="stat-value text-teal-700">{{ monthly_avg|stringformat:"g" }}</div>
+                        <div class="stat-value text-teal-700">
+                            {{ hours_required_this_month|stringformat:"g" }} <span class="text-sm font-normal">hrs</span>
+                        </div>
                     </div>
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-tasks"></i> Hours Needed
+                            <i class="fas fa-hourglass-end"></i> Hours Remaining
                         </div>
-                        <div class="stat-value text-teal-700">{{ hours_needed_this_month|stringformat:"g" }}</div>
+                        <div class="stat-value text-teal-700">
+                            {{ hours_remaining_this_month|stringformat:"g" }} <span class="text-sm font-normal">hrs</span>
+                        </div>
                     </div>
                     <div class="stat bg-white p-3 rounded-xl shadow">
                         <div class="stat-title flex items-center gap-1 text-gray-700">
-                            <i class="fas fa-chart-bar"></i> Projected Month End
+                            <i class="fas fa-percent"></i> Percent Completed
                         </div>
-                        <div class="stat-value text-teal-700">{{ projected_hours_end_of_month|stringformat:"g" }}</div>
+                        <div class="stat-value text-teal-700">
+                            {{ percent_complete_this_month|floatformat:1 }}%
+                        </div>
+                    </div>
+                    <div class="stat bg-white p-3 rounded-xl shadow">
+                        <div class="stat-title flex items-center gap-1 text-gray-700">
+                            <i class="fas fa-calendar-day"></i> Days Logged
+                        </div>
+                        <div class="stat-value text-teal-700">
+                            {{ days_attended_this_month }} <span class="text-sm font-normal">days</span>
+                        </div>
+                    </div>
+                    <div class="stat bg-white p-3 rounded-xl shadow">
+                        <div class="stat-title flex items-center gap-1 text-gray-700">
+                            <i class="fas fa-calendar"></i> Workdays Remaining
+                        </div>
+                        <div class="stat-value text-teal-700">
+                            {{ workdays_remaining_in_month }} <span class="text-sm font-normal">days</span>
+                        </div>
                     </div>
                 </div>
             </div>

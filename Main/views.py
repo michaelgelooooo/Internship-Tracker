@@ -34,12 +34,23 @@ def get_internship_stats(internship):
         .count()
     )
 
+    # Fetch all holiday dates once — reused across calculations
+    holiday_dates = set(
+        DailyTimeRecord.objects.filter(
+            internship=internship,
+            is_holiday=True,
+        ).values_list("date", flat=True)
+    )
+
+    def is_working_day(d):
+        return d.weekday() < 4 and d not in holiday_dates
+
     def add_workdays(start_date, workdays):
         current_date = start_date
         days_added = 0
         while days_added < workdays:
             current_date += timedelta(days=1)
-            if current_date.weekday() < 4:
+            if is_working_day(current_date):
                 days_added += 1
         return current_date
 
@@ -58,7 +69,14 @@ def get_internship_stats(internship):
     weeks_left = math.ceil(days_left / 4) if days_left > 0 else 0
 
     start_date = internship.start_date
-    weeks_elapsed = (today - start_date).days // 7
+
+    # Count actual working days elapsed since start excluding holidays
+    workdays_elapsed = sum(
+        1
+        for i in range((today - start_date).days)
+        if is_working_day(start_date + timedelta(days=i))
+    )
+    weeks_elapsed = workdays_elapsed / 4
     expected_hours_by_now = round(weeks_elapsed * standard_hours_per_week, 2)
     hours_ahead_behind = round(total_logged - expected_hours_by_now, 2)
 
@@ -93,33 +111,39 @@ def get_internship_stats(internship):
 
     _, last_day = monthrange(today.year, today.month)
 
-    workdays_remaining_in_month = sum(
-        1
-        for d in range(today.day + 1, last_day + 1)
-        if date(today.year, today.month, d).weekday() < 4
-    )
-
+    # Workdays elapsed this month excluding holidays
     workdays_elapsed_this_month = sum(
         1
         for d in range(1, today.day + 1)
-        if date(today.year, today.month, d).weekday() < 4
+        if is_working_day(date(today.year, today.month, d))
     )
 
-    days_missed_this_month = max(
-        workdays_elapsed_this_month - days_attended_this_month, 0
+    # Workdays remaining this month excluding holidays
+    workdays_remaining_in_month = sum(
+        1
+        for d in range(today.day + 1, last_day + 1)
+        if is_working_day(date(today.year, today.month, d))
     )
 
+    # Monthly hours based on 40hr work week
+    total_workdays_this_month = (
+        workdays_elapsed_this_month + workdays_remaining_in_month
+    )
+    weeks_in_month = total_workdays_this_month / 4
+    hours_required_this_month = round(weeks_in_month * standard_hours_per_week, 2)
+    hours_remaining_this_month = round(
+        max(hours_required_this_month - hours_this_month, 0), 2
+    )
+    percent_complete_this_month = round(
+        (
+            (hours_this_month / hours_required_this_month) * 100
+            if hours_required_this_month
+            else 0
+        ),
+        1,
+    )
     projected_hours_end_of_month = round(
         hours_this_month + (monthly_avg * workdays_remaining_in_month), 2
-    )
-
-    # Weeks elapsed this month for pace calculation
-    weeks_elapsed_this_month = workdays_elapsed_this_month / 4
-    expected_hours_this_month = round(
-        weeks_elapsed_this_month * standard_hours_per_week, 2
-    )
-    hours_needed_this_month = round(
-        max(expected_hours_this_month - hours_this_month, 0), 2
     )
 
     return {
@@ -140,10 +164,11 @@ def get_internship_stats(internship):
         "required_avg_going_forward": required_avg_going_forward,
         # Monthly
         "hours_this_month": hours_this_month,
+        "hours_required_this_month": hours_required_this_month,
+        "hours_remaining_this_month": hours_remaining_this_month,
+        "percent_complete_this_month": percent_complete_this_month,
         "days_attended_this_month": days_attended_this_month,
-        "days_missed_this_month": days_missed_this_month,
-        "monthly_avg": monthly_avg,
-        "hours_needed_this_month": hours_needed_this_month,
+        "workdays_remaining_in_month": workdays_remaining_in_month,
         "projected_hours_end_of_month": projected_hours_end_of_month,
     }
 
@@ -249,10 +274,10 @@ def get_next_quick_log_action(internship, today_record=None):
 
 
 ACTION_LABELS = {
-    "am_in": "AM Time In",
-    "am_out": "AM Time Out",
-    "pm_in": "PM Time In",
-    "pm_out": "PM Time Out",
+    "am_in": "Time In (AM)",
+    "am_out": "Time Out (AM)",
+    "pm_in": "Time In (PM)",
+    "pm_out": "Time Out (PM)",
 }
 
 
