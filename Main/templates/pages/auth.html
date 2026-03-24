@@ -9,14 +9,14 @@
 
             <input type="radio" name="auth_tabs"
                 class="tab [--tab-bg:#FFF7ED] font-bold text-teal-800 text-center flex-1" id="login-tab"
-                aria-label="LOG-IN" checked />
+                aria-label="LOG-IN" {% if active_tab == 'login' %}checked{% endif %} />
             <div class="tab-content pt-4">
                 {% include 'partials/login.html' %}
             </div>
 
             <input type="radio" name="auth_tabs"
                 class="tab [--tab-bg:#FFF7ED] font-bold text-teal-800 text-center flex-1" id="register-tab"
-                aria-label="REGISTER" />
+                aria-label="REGISTER" {% if active_tab == 'register' %}checked{% endif %} />
             <div class="tab-content pt-4">
                 {% include 'partials/register.html' %}
             </div>

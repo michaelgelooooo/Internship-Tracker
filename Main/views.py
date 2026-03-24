@@ -7,23 +7,15 @@ from django.db.models import Q
 from django.contrib import messages
 from datetime import datetime, date, timedelta
 from django.utils import timezone
-from zoneinfo import ZoneInfo
 from calendar import monthrange
 from .models import Internship, DailyTimeRecord
+from django.core.exceptions import ValidationError
+from django.http import JsonResponse
 
 
-def get_internship_stats(internship, month=None):
-    """
-    Returns both monthly and overall internship statistics.
-    `month` is an integer (1-12) for monthly stats. Defaults to current month.
-    """
+def get_internship_stats(internship):
     today = date.today()
-    if not month:
-        month = today.month
 
-    # -------------------
-    # Overall stats
-    # -------------------
     total_logged = internship.total_hours_logged
     total_required = internship.total_hours_required
     remaining_hours = max(total_required - total_logged, 0)
@@ -36,45 +28,24 @@ def get_internship_stats(internship, month=None):
             internship=internship, is_holiday=False, is_weekend=False
         )
         .filter(
-            Q(am_in__isnull=False)
-            | Q(am_out__isnull=False)
-            | Q(pm_in__isnull=False)
-            | Q(pm_out__isnull=False)
+            Q(am_in__isnull=False, am_out__isnull=False)
+            | Q(pm_in__isnull=False, pm_out__isnull=False)
         )
         .count()
     )
 
-    today_record = DailyTimeRecord.objects.filter(
-        internship=internship, date=today
-    ).first()
-
-    # Calculate a “diff” to subtract 1 if today is incomplete
-    diff = 0
-    if today_record:
-        incomplete_today = (
-            not today_record.am_in
-            or not today_record.am_out
-            or not today_record.pm_in
-            or not today_record.pm_out
-        )
-        if incomplete_today:
-            diff = 1
-
-    # Adjust total_days_logged for average calculation
-    denominator = max(total_days_logged - diff, 1)  # avoid division by zero
-    total_avg = round(total_logged / denominator, 2)
+    total_avg = round(total_logged / max(total_days_logged, 1), 2)
 
     def add_workdays(start_date, workdays):
         current_date = start_date
         days_added = 0
         while days_added < workdays:
             current_date += timedelta(days=1)
-            if current_date.weekday() < 5:  # 0=Monday, 6=Sunday
+            if current_date.weekday() < 4:
                 days_added += 1
         return current_date
 
-    # Days left based on 8-hour workday
-    standard_hours_per_day = 8
+    standard_hours_per_day = 10
     if remaining_hours > 0:
         days_left = int((remaining_hours / standard_hours_per_day) + 0.999)
         projected_completion = add_workdays(today, days_left)
@@ -83,7 +54,6 @@ def get_internship_stats(internship, month=None):
         projected_completion = today
 
     return {
-        # Overall
         "total_logged": total_logged,
         "total_required": total_required,
         "remaining_hours": remaining_hours,
@@ -93,33 +63,6 @@ def get_internship_stats(internship, month=None):
         "days_left": days_left,
         "projected_completion": projected_completion,
     }
-
-
-# -----------------------------
-# Month Data
-# -----------------------------
-def get_year_data(year=None):
-    if not year:
-        year = date.today().year
-
-    year_data = []
-
-    for month in range(1, 13):
-        first_day = date(year, month, 1)
-        _, last_day = monthrange(year, month)
-        days_in_month = list(range(1, last_day + 1))
-
-        year_data.append(
-            {
-                "month": first_day.strftime("%B"),  # Month name
-                "month_num": month,
-                "year": year,
-                "first_day_of_month": first_day,
-                "days_in_month": days_in_month,
-            }
-        )
-
-    return year_data
 
 
 def build_months_rows(records_map, year):
@@ -158,33 +101,65 @@ def build_months_rows(records_map, year):
 
 
 def get_daily_records(internship, year):
-    """
-    Returns a dictionary of {(month, day): DailyTimeRecord} for the internship in the given year
-    """
     daily_records = DailyTimeRecord.objects.filter(
         internship=internship, date__year=year
     )
     return {(r.date.month, r.date.day): r for r in daily_records}
 
 
-def get_next_quick_log_action(internship):
-    today = timezone.localdate()
-    record = DailyTimeRecord.objects.filter(internship=internship, date=today).first()
+@login_required
+def get_daily_record(request):
+    try:
+        day = int(request.GET.get("day"))
+        month = int(request.GET.get("month"))
+        year = int(request.GET.get("year"))
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "Invalid date"}, status=400)
 
-    if not record:
+    internship = get_object_or_404(Internship, user=request.user)
+    record_date = date(year, month, day)
+    record = DailyTimeRecord.objects.filter(
+        internship=internship, date=record_date
+    ).first()
+
+    return JsonResponse(
+        {
+            "day": day,
+            "month": month,
+            "year": year,
+            "am_in": record.am_in.strftime("%H:%M") if record and record.am_in else "",
+            "am_out": (
+                record.am_out.strftime("%H:%M") if record and record.am_out else ""
+            ),
+            "pm_in": record.pm_in.strftime("%H:%M") if record and record.pm_in else "",
+            "pm_out": (
+                record.pm_out.strftime("%H:%M") if record and record.pm_out else ""
+            ),
+            "is_holiday": record.is_holiday if record else False,
+            "is_weekend": record.is_weekend if record else False,
+        }
+    )
+
+
+def get_next_quick_log_action(internship, today_record=None):
+    if today_record is None:
+        today_record = DailyTimeRecord.objects.filter(
+            internship=internship, date=timezone.localdate()
+        ).first()
+
+    if not today_record:
         return "am_in"
 
-    if record.is_holiday or record.is_weekend:
+    if today_record.is_holiday or today_record.is_weekend:
         return None
 
-    # Normal time progression
-    if not record.am_in:
+    if not today_record.am_in:
         return "am_in"
-    if not record.am_out:
+    if not today_record.am_out:
         return "am_out"
-    if not record.pm_in:
+    if not today_record.pm_in:
         return "pm_in"
-    if not record.pm_out:
+    if not today_record.pm_out:
         return "pm_out"
 
     return None
@@ -201,12 +176,15 @@ ACTION_LABELS = {
 @login_required
 def mark_day(request):
     if request.method == "POST":
-        internship = get_object_or_404(Internship, user=request.user)
-        day = int(request.POST.get("day"))
-        month = int(request.POST.get("month"))
-        year = int(request.POST.get("year"))
-        mark_type = request.POST.get("mark")
+        try:
+            day = int(request.POST.get("day"))
+            month = int(request.POST.get("month"))
+            year = int(request.POST.get("year"))
+        except (TypeError, ValueError):
+            return redirect("index")
 
+        internship = get_object_or_404(Internship, user=request.user)
+        mark_type = request.POST.get("mark")
         record_date = date(year, month, day)
 
         record, created = DailyTimeRecord.objects.get_or_create(
@@ -234,21 +212,35 @@ def mark_day(request):
                 record.pm_in = None
                 record.pm_out = None
 
-        record.save()
+        try:
+            record.save()
+        except ValidationError:
+            messages.error(
+                request, "Could not mark day due to existing invalid time entries."
+            )
 
-    url = f"{reverse('index')}?month={month}"
-    return redirect(url)
+        redirect_month = request.POST.get("redirect_month", month)
+        redirect_year = request.POST.get("redirect_year", year)
+
+        return redirect(
+            f"{reverse('index')}?month={redirect_month}&year={redirect_year}"
+        )
+
+    return redirect("index")
 
 
 @login_required
 def update_daily_record(request):
     if request.method == "POST":
-        internship = get_object_or_404(Internship, user=request.user)
-        day = int(request.POST.get("day"))
-        month = int(request.POST.get("month"))
-        year = int(request.POST.get("year"))
+        try:
+            day = int(request.POST.get("day"))
+            month = int(request.POST.get("month"))
+            year = int(request.POST.get("year"))
+        except (TypeError, ValueError):
+            return redirect("index")
 
-        # Helper to convert string to time
+        internship = get_object_or_404(Internship, user=request.user)
+
         def str_to_time(s):
             if not s:
                 return None
@@ -260,81 +252,92 @@ def update_daily_record(request):
         pm_out = str_to_time(request.POST.get("pm_out"))
 
         record_date = date(year, month, day)
-
         all_empty = all(f is None for f in [am_in, am_out, pm_in, pm_out])
 
         record = DailyTimeRecord.objects.filter(
             internship=internship, date=record_date
         ).first()
 
-        if all_empty and not record:
-            return redirect("index")
+        if all_empty:
+            if record and not record.is_weekend and not record.is_holiday:
+                record.delete()
+        else:
+            if not record:
+                record = DailyTimeRecord(internship=internship, date=record_date)
+            record.am_in = am_in
+            record.am_out = am_out
+            record.pm_in = pm_in
+            record.pm_out = pm_out
+            try:
+                record.save()
+            except ValidationError:
+                messages.error(
+                    request, "Invalid time entries. Please check the time order."
+                )
 
-        if not record:
-            record = DailyTimeRecord.objects.create(
-                internship=internship, date=record_date
-            )
+        return redirect(f"{reverse('index')}?month={month}&year={year}")
 
-        record.am_in = am_in
-        record.am_out = am_out
-        record.pm_in = pm_in
-        record.pm_out = pm_out
-        record.save()
-
-        if (
-            all(
-                f in [None, ""]
-                for f in [record.am_in, record.am_out, record.pm_in, record.pm_out]
-            )
-            and not record.is_weekend
-            and not record.is_holiday
-        ):
-            record.delete()
-
-    url = f"{reverse('index')}?month={month}"
-    return redirect(url)
+    return redirect("index")
 
 
 @login_required
 def delete_daily_record(request):
     if request.method == "POST":
+        try:
+            day = int(request.POST.get("day"))
+            month = int(request.POST.get("month"))
+            year = int(request.POST.get("year"))
+        except (TypeError, ValueError):
+            return redirect("index")
+
         internship = get_object_or_404(Internship, user=request.user)
-        day = int(request.POST.get("day"))
-        month = int(request.POST.get("month"))
-        year = int(request.POST.get("year"))
-
         record_date = date(year, month, day)
-
         record = DailyTimeRecord.objects.filter(
             internship=internship, date=record_date
         ).first()
         if record:
             record.delete()
 
-    url = f"{reverse('index')}?month={month}"
-    return redirect(url)
+        return redirect(f"{reverse('index')}?month={month}&year={year}")
+
+    return redirect("index")
 
 
 @login_required
 def quick_log(request):
     if request.method == "POST":
         action = request.POST.get("log_action")
-
         internship = Internship.objects.get(user=request.user)
 
-        # Get current LOCAL Manila time
         now = timezone.localtime()
         date_obj = now.date()
         time_obj = now.time()
+
+        # Single DB query reused for both checks
+        existing = DailyTimeRecord.objects.filter(
+            internship=internship, date=date_obj
+        ).first()
+
+        expected_action = get_next_quick_log_action(internship, existing)
+        if action != expected_action or expected_action is None:
+            messages.error(request, "Invalid log action.")
+            return redirect("index")
+
+        if existing and (existing.is_holiday or existing.is_weekend):
+            messages.error(request, "Cannot log time on a holiday or weekend.")
+            return redirect("index")
 
         record, created = DailyTimeRecord.objects.get_or_create(
             internship=internship, date=date_obj
         )
 
-        setattr(record, action, time_obj)
-        record.save()
+        try:
+            setattr(record, action, time_obj)
+            record.save()
+        except ValidationError:
+            messages.error(request, "Invalid log action.")
 
-        return redirect("index")
+    return redirect("index")
 
 
 @login_required
@@ -342,35 +345,51 @@ def index(request):
     internship = get_object_or_404(Internship, user=request.user)
     stats = get_internship_stats(internship)
 
-    # Current month
+    # Current month and year
     current_month = int(request.GET.get("month", date.today().month))
-    year = date.today().year
+    current_year = int(request.GET.get("year", date.today().year))
 
-    # Prev/Next month
-    prev_month = current_month - 1 if current_month > 1 else 12
-    next_month = current_month + 1 if current_month < 12 else 1
+    # Prev/Next month with year rollover
+    if current_month == 1:
+        prev_month = 12
+        prev_year = current_year - 1
+    else:
+        prev_month = current_month - 1
+        prev_year = current_year
+
+    if current_month == 12:
+        next_month = 1
+        next_year = current_year + 1
+    else:
+        next_month = current_month + 1
+        next_year = current_year
 
     # Build daily records
-    records_map = get_daily_records(internship, year)
-    months_rows = build_months_rows(records_map, year)
+    records_map = get_daily_records(internship, current_year)
+    months_rows = build_months_rows(records_map, current_year)
 
-    # Quick log
-    next_action = get_next_quick_log_action(internship)
+    today = timezone.localdate()
+    today_record = DailyTimeRecord.objects.filter(
+        internship=internship, date=today
+    ).first()
+    next_action = get_next_quick_log_action(internship, today_record)
     next_action_label = ACTION_LABELS.get(next_action, "No more actions for today")
-
-    now_manila = datetime.now(ZoneInfo("Asia/Manila"))
-    date_obj = now_manila.date()
 
     context = {
         "internship": internship,
         **stats,
         "months_rows": months_rows,
         "current_month": current_month,
+        "current_year": current_year,
         "prev_month": prev_month,
+        "prev_year": prev_year,
         "next_month": next_month,
+        "next_year": next_year,
         "next_action": next_action,
         "next_action_label": next_action_label,
-        "today_log": date_obj,
+        "today_quick_log": today,
+        "today_is_holiday": today_record.is_holiday if today_record else False,
+        "today_is_weekend": today_record.is_weekend if today_record else False,
     }
 
     return render(request, "pages/index.html", context)
@@ -401,7 +420,7 @@ def login_view(request):
         else:
             # Tag this error as login-specific
             messages.error(request, "Invalid username or password.")
-            return redirect("auth")
+            return redirect(f"{reverse('auth')}?tab=login")
 
     return redirect("auth")
 
@@ -425,15 +444,15 @@ def register_view(request):
         # Validation
         if password1 != password2:
             messages.error(request, "Passwords do not match.")
-            return redirect("auth")
+            return redirect(f"{reverse('auth')}?tab=register")
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists.")
-            return redirect("auth")
+            return redirect(f"{reverse('auth')}?tab=register")
 
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already registered.")
-            return redirect("auth")
+            return redirect(f"{reverse('auth')}?tab=register")
 
         # Create user
         user = User.objects.create_user(

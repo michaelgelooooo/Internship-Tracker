@@ -10,6 +10,8 @@ urlpatterns = [
     path("update-info/", views.update_user_info, name="update-info"),
     path("logout/", views.logout_view, name="logout"),
 
+
+    path('get-daily-record/', views.get_daily_record, name='get-daily-record'),
     path("quick-log/", views.quick_log, name="quick-log"),
     path("update-log/", views.update_daily_record, name="update-log"),
     path("delete-log/", views.delete_daily_record, name="delete-log"),

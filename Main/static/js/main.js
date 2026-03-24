@@ -1,89 +1,66 @@
-function openModal(row) {
-    // Grab day, month, year from the row
-    const day = row.dataset.day || 1;
-    const month = row.dataset.month || 1;
-    const year = row.dataset.year || new Date().getFullYear();
+async function openModal(row) {
+    const recordUrl = document.querySelector('[data-record-url]')?.dataset.recordUrl;
+    const day = row.dataset.day;
+    const month = row.dataset.month;
+    const year = row.dataset.year;
 
-    // Populate time inputs
-    const amIn = row.dataset.amIn || "";
-    const amOut = row.dataset.amOut || "";
-    const pmIn = row.dataset.pmIn || "";
-    const pmOut = row.dataset.pmOut || "";
+    let data;
+    try {
+        const response = await fetch(`${recordUrl}?day=${day}&month=${month}&year=${year}`);
+        if (!response.ok) throw new Error('Failed to fetch record');
+        data = await response.json();
+    } catch (error) {
+        console.error('Error fetching record:', error);
+        return;
+    }
 
+    // Populate update form
     document.getElementById('modal-day').value = day;
     document.getElementById('modal-month').value = month;
     document.getElementById('modal-year').value = year;
+    document.getElementById('modal-am-in').value = data.am_in;
+    document.getElementById('modal-am-out').value = data.am_out;
+    document.getElementById('modal-pm-in').value = data.pm_in;
+    document.getElementById('modal-pm-out').value = data.pm_out;
 
-    document.getElementById('modal-am-in').value = amIn;
-    document.getElementById('modal-am-out').value = amOut;
-    document.getElementById('modal-pm-in').value = pmIn;
-    document.getElementById('modal-pm-out').value = pmOut;
-
-    // Populate month/year for other forms that also use the day
+    // Populate holiday, weekend, delete forms
     ['holiday', 'weekend', 'delete'].forEach(prefix => {
-        const dayInput = document.getElementById(`${prefix}-day`);
-        const monthInput = document.getElementById(`${prefix}-month`);
-        const yearInput = document.getElementById(`${prefix}-year`);
-        if (dayInput) dayInput.value = day;
-        if (monthInput) monthInput.value = month;
-        if (yearInput) yearInput.value = year;
+        document.getElementById(`modal-${prefix}-day`).value = day;
+        document.getElementById(`modal-${prefix}-month`).value = month;
+        document.getElementById(`modal-${prefix}-year`).value = year;
     });
 
-    // Display the date header
-    const displayDate = new Date(year, month - 1, day); // JS months are 0-indexed
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('modal-date').textContent = displayDate.toLocaleDateString(undefined, options);
+    // Display date header
+    const displayDate = new Date(year, month - 1, day);
+    document.getElementById('modal-date').textContent = displayDate.toLocaleDateString(
+        undefined,
+        { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+    );
 
-    // Get holiday/weekend flags
-    const isHoliday = row.dataset.isHoliday === "true";
-    const isWeekend = row.dataset.isWeekend === "true";
-
-    // Disable/enable time inputs and save button if it's a holiday/weekend
-    const disableForm = isHoliday || isWeekend;
+    // Disable time inputs and save button for holidays/weekends
+    const disableForm = data.is_holiday || data.is_weekend;
     ['modal-am-in', 'modal-am-out', 'modal-pm-in', 'modal-pm-out'].forEach(id => {
-        const input = document.getElementById(id);
-        if (input) input.disabled = disableForm;
+        document.getElementById(id).disabled = disableForm;
     });
-    const saveBtn = document.querySelector('button[form="daily-log-form"]');
-    if (saveBtn) saveBtn.disabled = disableForm;
+    document.querySelector('button[form="daily-log-form"]').disabled = disableForm;
 
-    // Update Holiday/Weekend buttons visually
+    // Update holiday/weekend button states
     const holidayBtn = document.getElementById('holiday-btn');
     const weekendBtn = document.getElementById('weekend-btn');
 
-    if (isHoliday) {
-        holidayBtn.classList.add('bg-orange-500', 'text-white');
-        holidayBtn.textContent = "Unmark as Holiday";
+    holidayBtn.classList.toggle('bg-orange-500', data.is_holiday);
+    holidayBtn.classList.toggle('text-white', data.is_holiday);
+    holidayBtn.textContent = data.is_holiday ? "Unmark as Holiday" : "Mark as Holiday";
 
-        weekendBtn.classList.remove('bg-orange-500', 'text-white');
-        weekendBtn.textContent = "Mark as Weekend";
+    weekendBtn.classList.toggle('bg-orange-500', data.is_weekend);
+    weekendBtn.classList.toggle('text-white', data.is_weekend);
+    weekendBtn.textContent = data.is_weekend ? "Unmark as Weekend" : "Mark as Weekend";
 
-    } else if (isWeekend) {
-        weekendBtn.classList.add('bg-orange-500', 'text-white');
-        weekendBtn.textContent = "Unmark as Weekend";
-
-        holidayBtn.classList.remove('bg-orange-500', 'text-white');
-        holidayBtn.textContent = "Mark as Holiday";
-
-    } else {
-        holidayBtn.classList.remove('bg-orange-500', 'text-white');
-        holidayBtn.textContent = "Mark as Holiday";
-
-        weekendBtn.classList.remove('bg-orange-500', 'text-white');
-        weekendBtn.textContent = "Mark as Weekend";
-    }
-
-    // Open the modal
-    document.getElementById('log-modal').checked = true;
+    // Open modal
+    document.getElementById('log-modal').showModal();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    // --- Ensure modal starts closed on page load ---
-    const modalCheckbox = document.getElementById('log-modal');
-    if (modalCheckbox) {
-        modalCheckbox.checked = false; // modal always starts closed
-    }
-
     // --- Quick Log date/time updater ---
     const dateInput = document.querySelector('input[name="log_date"]');
     const timeInput = document.querySelector('input[name="log_time"]');
@@ -91,19 +68,16 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateDateTime() {
         const now = new Date();
 
-        // YYYY-MM-DD
-        const date = now.toISOString().split('T')[0];
-
-        // HH:MM (24-hour)
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const date = `${year}-${month}-${day}`;
         const time = now.toTimeString().slice(0, 5);
 
         if (dateInput) dateInput.value = date;
         if (timeInput) timeInput.value = time;
     }
 
-    // Initial set
     updateDateTime();
-
-    // Update every second
     setInterval(updateDateTime, 1000);
 });
