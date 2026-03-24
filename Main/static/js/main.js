@@ -23,28 +23,24 @@ async function openModal(row) {
     document.getElementById('modal-pm-in').value = data.pm_in;
     document.getElementById('modal-pm-out').value = data.pm_out;
 
-    // Populate holiday, weekend, delete forms
     ['holiday', 'weekend', 'delete'].forEach(prefix => {
         document.getElementById(`modal-${prefix}-day`).value = day;
         document.getElementById(`modal-${prefix}-month`).value = month;
         document.getElementById(`modal-${prefix}-year`).value = year;
     });
 
-    // Display date header
     const displayDate = new Date(year, month - 1, day);
     document.getElementById('modal-date').textContent = displayDate.toLocaleDateString(
         undefined,
         { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
     );
 
-    // Disable time inputs and save button for holidays/weekends
     const disableForm = data.is_holiday || data.is_weekend;
     ['modal-am-in', 'modal-am-out', 'modal-pm-in', 'modal-pm-out'].forEach(id => {
         document.getElementById(id).disabled = disableForm;
     });
     document.querySelector('button[form="daily-log-form"]').disabled = disableForm;
 
-    // Update holiday/weekend button states
     const holidayBtn = document.getElementById('holiday-btn');
     const weekendBtn = document.getElementById('weekend-btn');
 
@@ -56,8 +52,22 @@ async function openModal(row) {
     weekendBtn.classList.toggle('text-white', data.is_weekend);
     weekendBtn.textContent = data.is_weekend ? "Unmark as Weekend" : "Mark as Weekend";
 
-    // Open modal
-    document.getElementById('log-modal').showModal();
+    // Open modal with fallback for browsers without native dialog support
+    const modal = document.getElementById('log-modal');
+    if (typeof modal.showModal === 'function') {
+        modal.showModal();
+    } else {
+        modal.setAttribute('open', '');
+    }
+}
+
+function closeModal() {
+    const modal = document.getElementById('log-modal');
+    if (typeof modal.close === 'function') {
+        modal.close();
+    } else {
+        modal.removeAttribute('open');
+    }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
