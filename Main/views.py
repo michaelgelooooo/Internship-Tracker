@@ -70,10 +70,10 @@ def get_internship_stats(internship):
 
     start_date = internship.start_date
 
-    # Count actual working days elapsed since start excluding holidays
+    # Count actual working days elapsed since start excluding holidays and today
     workdays_elapsed = sum(
         1
-        for i in range((today - start_date).days)
+        for i in range((today - start_date).days)  # stops before today
         if is_working_day(start_date + timedelta(days=i))
     )
     weeks_elapsed = workdays_elapsed / 4
@@ -111,14 +111,14 @@ def get_internship_stats(internship):
 
     _, last_day = monthrange(today.year, today.month)
 
-    # Workdays elapsed this month excluding holidays
+    # Workdays elapsed this month excluding holidays and today
     workdays_elapsed_this_month = sum(
         1
-        for d in range(1, today.day + 1)
+        for d in range(1, today.day)  # exclude today
         if is_working_day(date(today.year, today.month, d))
     )
 
-    # Workdays remaining this month excluding holidays
+    # Workdays remaining this month excluding holidays (starts from tomorrow)
     workdays_remaining_in_month = sum(
         1
         for d in range(today.day + 1, last_day + 1)
