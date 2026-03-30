@@ -46,8 +46,8 @@
                     </div>
                 </form>
 
-                <!-- HOLIDAY / WEEKEND FORMS -->
-                <div class="grid grid-cols-2 gap-2">
+                <!-- HOLIDAY / WEEKEND / ABSENT FORMS -->
+                <div class="grid grid-cols-3 gap-2">
                     <form method="POST" action="{% url 'mark-day' %}">
                         {% csrf_token %}
                         <input type="hidden" name="day" value="{{ today_quick_log.day }}">
@@ -58,7 +58,7 @@
                         <input type="hidden" name="mark" value="holiday">
                         <button type="submit"
                             class="w-full py-2 font-semibold rounded-lg border-2 border-orange-500 hover:bg-orange-200 transition {% if today_is_holiday %}bg-orange-500 text-white{% else %}text-orange-700{% endif %}">
-                            {% if today_is_holiday %}Unmark Holiday{% else %}Mark Holiday{% endif %}
+                            Holiday
                         </button>
                     </form>
 
@@ -72,7 +72,21 @@
                         <input type="hidden" name="mark" value="weekend">
                         <button type="submit"
                             class="w-full py-2 font-semibold rounded-lg border-2 border-orange-500 hover:bg-orange-200 transition {% if today_is_weekend %}bg-orange-500 text-white{% else %}text-orange-700{% endif %}">
-                            {% if today_is_weekend %}Unmark Weekend{% else %}Mark Weekend{% endif %}
+                            Weekend
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{% url 'mark-day' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="day" value="{{ today_quick_log.day }}">
+                        <input type="hidden" name="month" value="{{ today_quick_log.month }}">
+                        <input type="hidden" name="year" value="{{ today_quick_log.year }}">
+                        <input type="hidden" name="redirect_month" value="{{ current_month }}">
+                        <input type="hidden" name="redirect_year" value="{{ current_year }}">
+                        <input type="hidden" name="mark" value="absent">
+                        <button type="submit"
+                            class="w-full py-2 font-semibold rounded-lg border-2 border-orange-500 hover:bg-orange-200 transition {% if today_is_absent %}bg-orange-500 text-white{% else %}text-orange-700{% endif %}">
+                            Absent
                         </button>
                     </form>
                 </div>

@@ -44,6 +44,8 @@
                     <td colspan="5" class="text-center font-bold">HOLIDAY</td>
                     {% elif row.is_weekend %}
                     <td colspan="5" class="text-center font-bold">WEEKEND</td>
+                    {% elif row.is_absent %}
+                    <td colspan="5" class="text-center font-bold">ABSENT</td>
                     {% else %}
                     <td>{{ row.am_in|time:"H:i"|default:"-" }}</td>
                     <td>{{ row.am_out|time:"H:i"|default:"-" }}</td>

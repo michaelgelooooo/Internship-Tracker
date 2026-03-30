@@ -195,6 +195,7 @@ def build_months_rows(records_map, year):
                     "hours": record.total_hours if record else None,
                     "is_holiday": record.is_holiday if record else False,
                     "is_weekend": record.is_weekend if record else False,
+                    "is_absent": record.is_absent if record else False,  # ADD THIS
                 }
             )
         months_rows.append(
@@ -245,6 +246,7 @@ def get_daily_record(request):
             ),
             "is_holiday": record.is_holiday if record else False,
             "is_weekend": record.is_weekend if record else False,
+            "is_absent": record.is_absent if record else False,  # ADD THIS
         }
     )
 
@@ -258,7 +260,9 @@ def get_next_quick_log_action(internship, today_record=None):
     if not today_record:
         return "am_in"
 
-    if today_record.is_holiday or today_record.is_weekend:
+    if (
+        today_record.is_holiday or today_record.is_weekend or today_record.is_absent
+    ):  # ADD is_absent
         return None
 
     if not today_record.am_in:
@@ -301,20 +305,65 @@ def mark_day(request):
 
         if mark_type == "holiday":
             if record.is_holiday:
-                record.is_holiday = False
+                # Unmarking - delete if no time entries exist
+                if not any([record.am_in, record.am_out, record.pm_in, record.pm_out]):
+                    record.delete()
+                else:
+                    record.is_holiday = False
+                    record.save()
+                redirect_month = request.POST.get("redirect_month", month)
+                redirect_year = request.POST.get("redirect_year", year)
+                return redirect(
+                    f"{reverse('index')}?month={redirect_month}&year={redirect_year}"
+                )
             else:
                 record.is_holiday = True
                 record.is_weekend = False
+                record.is_absent = False
                 record.am_in = None
                 record.am_out = None
                 record.pm_in = None
                 record.pm_out = None
+
         elif mark_type == "weekend":
             if record.is_weekend:
-                record.is_weekend = False
+                # Unmarking - delete if no time entries exist
+                if not any([record.am_in, record.am_out, record.pm_in, record.pm_out]):
+                    record.delete()
+                else:
+                    record.is_weekend = False
+                    record.save()
+                redirect_month = request.POST.get("redirect_month", month)
+                redirect_year = request.POST.get("redirect_year", year)
+                return redirect(
+                    f"{reverse('index')}?month={redirect_month}&year={redirect_year}"
+                )
             else:
                 record.is_weekend = True
                 record.is_holiday = False
+                record.is_absent = False
+                record.am_in = None
+                record.am_out = None
+                record.pm_in = None
+                record.pm_out = None
+
+        elif mark_type == "absent":
+            if record.is_absent:
+                # Unmarking - delete if no time entries exist
+                if not any([record.am_in, record.am_out, record.pm_in, record.pm_out]):
+                    record.delete()
+                else:
+                    record.is_absent = False
+                    record.save()
+                redirect_month = request.POST.get("redirect_month", month)
+                redirect_year = request.POST.get("redirect_year", year)
+                return redirect(
+                    f"{reverse('index')}?month={redirect_month}&year={redirect_year}"
+                )
+            else:
+                record.is_absent = True
+                record.is_holiday = False
+                record.is_weekend = False
                 record.am_in = None
                 record.am_out = None
                 record.pm_in = None
@@ -431,8 +480,12 @@ def quick_log(request):
             messages.error(request, "Invalid log action.")
             return redirect("index")
 
-        if existing and (existing.is_holiday or existing.is_weekend):
-            messages.error(request, "Cannot log time on a holiday or weekend.")
+        if existing and (
+            existing.is_holiday or existing.is_weekend or existing.is_absent
+        ):  # ADD is_absent
+            messages.error(
+                request, "Cannot log time on a holiday, weekend, or absent day."
+            )
             return redirect("index")
 
         record, created = DailyTimeRecord.objects.get_or_create(
@@ -498,6 +551,7 @@ def index(request):
         "today_quick_log": today,
         "today_is_holiday": today_record.is_holiday if today_record else False,
         "today_is_weekend": today_record.is_weekend if today_record else False,
+        "today_is_absent": today_record.is_absent if today_record else False,
     }
 
     return render(request, "pages/index.html", context)

@@ -14,6 +14,7 @@ class DailyTimeRecordInline(admin.TabularInline):  # or StackedInline
         "total_hours",
         "is_weekend",
         "is_holiday",
+        "is_absent",
     )
     readonly_fields = ("total_hours",)
 

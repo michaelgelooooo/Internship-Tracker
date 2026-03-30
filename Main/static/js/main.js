@@ -23,7 +23,8 @@ async function openModal(row) {
     document.getElementById('modal-pm-in').value = data.pm_in;
     document.getElementById('modal-pm-out').value = data.pm_out;
 
-    ['holiday', 'weekend', 'delete'].forEach(prefix => {
+    // UPDATE THIS LINE: Add 'absent' to the array
+    ['holiday', 'weekend', 'absent', 'delete'].forEach(prefix => {
         document.getElementById(`modal-${prefix}-day`).value = day;
         document.getElementById(`modal-${prefix}-month`).value = month;
         document.getElementById(`modal-${prefix}-year`).value = year;
@@ -35,7 +36,8 @@ async function openModal(row) {
         { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
     );
 
-    const disableForm = data.is_holiday || data.is_weekend;
+    // UPDATE THIS LINE: Add data.is_absent to the condition
+    const disableForm = data.is_holiday || data.is_weekend || data.is_absent;
     ['modal-am-in', 'modal-am-out', 'modal-pm-in', 'modal-pm-out'].forEach(id => {
         document.getElementById(id).disabled = disableForm;
     });
@@ -43,14 +45,20 @@ async function openModal(row) {
 
     const holidayBtn = document.getElementById('holiday-btn');
     const weekendBtn = document.getElementById('weekend-btn');
+    const absentBtn = document.getElementById('absent-btn'); // ADD THIS LINE
 
     holidayBtn.classList.toggle('bg-orange-500', data.is_holiday);
     holidayBtn.classList.toggle('text-white', data.is_holiday);
-    holidayBtn.textContent = data.is_holiday ? "Unmark as Holiday" : "Mark as Holiday";
+    holidayBtn.textContent = data.is_holiday ? "Holiday" : "Holiday";
 
     weekendBtn.classList.toggle('bg-orange-500', data.is_weekend);
     weekendBtn.classList.toggle('text-white', data.is_weekend);
-    weekendBtn.textContent = data.is_weekend ? "Unmark as Weekend" : "Mark as Weekend";
+    weekendBtn.textContent = data.is_weekend ? "Weekend" : "Weekend";
+
+    // ADD THESE LINES: Handle absent button
+    absentBtn.classList.toggle('bg-orange-500', data.is_absent);
+    absentBtn.classList.toggle('text-white', data.is_absent);
+    absentBtn.textContent = data.is_absent ? "Absent" : "Absent";
 
     // Open modal with fallback for browsers without native dialog support
     const modal = document.getElementById('log-modal');

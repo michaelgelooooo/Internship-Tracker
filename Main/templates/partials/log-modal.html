@@ -38,8 +38,8 @@
         </form>
 
         <!-- HOLIDAY / WEEKEND FORMS -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <form method="POST" action="{% url 'mark-day' %}" class="w-full">
+        <div class="grid grid-cols-3 gap-2 mb-6">
+            <form method="POST" action="{% url 'mark-day' %}">
                 {% csrf_token %}
                 <input type="hidden" name="day" id="modal-holiday-day">
                 <input type="hidden" name="month" id="modal-holiday-month">
@@ -47,11 +47,11 @@
                 <input type="hidden" name="mark" value="holiday">
                 <button id="holiday-btn" type="submit"
                     class="w-full py-2 text-orange-700 font-semibold rounded-lg border-2 border-orange-500 hover:bg-orange-200 transition">
-                    Mark as Holiday
+                    Holiday
                 </button>
             </form>
 
-            <form method="POST" action="{% url 'mark-day' %}" class="w-full">
+            <form method="POST" action="{% url 'mark-day' %}">
                 {% csrf_token %}
                 <input type="hidden" name="day" id="modal-weekend-day">
                 <input type="hidden" name="month" id="modal-weekend-month">
@@ -59,7 +59,19 @@
                 <input type="hidden" name="mark" value="weekend">
                 <button id="weekend-btn" type="submit"
                     class="w-full py-2 text-orange-700 font-semibold rounded-lg border-2 border-orange-500 hover:bg-orange-200 transition">
-                    Mark as Weekend
+                    Weekend
+                </button>
+            </form>
+
+            <form method="POST" action="{% url 'mark-day' %}">
+                {% csrf_token %}
+                <input type="hidden" name="day" id="modal-absent-day">
+                <input type="hidden" name="month" id="modal-absent-month">
+                <input type="hidden" name="year" id="modal-absent-year">
+                <input type="hidden" name="mark" value="absent">
+                <button id="absent-btn" type="submit"
+                    class="w-full py-2 text-orange-700 font-semibold rounded-lg border-2 border-orange-500 hover:bg-orange-200 transition">
+                    Absent
                 </button>
             </form>
         </div>

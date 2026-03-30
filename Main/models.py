@@ -35,6 +35,7 @@ class DailyTimeRecord(models.Model):
     total_hours = models.FloatField(default=0)
     is_holiday = models.BooleanField(default=False)
     is_weekend = models.BooleanField(default=False)
+    is_absent = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("internship", "date")
@@ -108,7 +109,7 @@ class DailyTimeRecord(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
 
-        if self.is_weekend or self.is_holiday:
+        if self.is_weekend or self.is_holiday or self.is_absent:
             self.total_hours = 0
         else:
             am_hours = self.calculate_block(self.am_in, self.am_out)
