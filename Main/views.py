@@ -416,7 +416,7 @@ def update_daily_record(request):
         ).first()
 
         if all_empty:
-            if record and not record.is_weekend and not record.is_holiday:
+            if record and not record.is_weekend and not record.is_holiday and not record.is_absent:
                 record.delete()
         else:
             if not record:
